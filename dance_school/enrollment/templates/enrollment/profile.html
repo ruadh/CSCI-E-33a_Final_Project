@@ -1,0 +1,33 @@
+{% extends "enrollment/layout.html" %}
+
+{% block body %}
+
+    <h2>My Profile</h2>
+
+    {% if message %}
+        <div>{{ message }}</div>
+    {% endif %}
+
+    {% if user %}
+        <h3>Account</h3>
+        <p><span class="label">Username:</span>  {{user.username}}</p>
+        <p><span class="label">Password:</span>  ****************</p>
+
+        <h3>About Me</h3>
+        <p><span class="label">First Name:</span>  {{user.first_name}}</p>
+        <p><span class="label">Last Name:</span>  {{user.last_name}}</p>
+        <p><span class="label">Email:</span>  {{user.email}}</p>
+        <p><span class="label">Phone:</span>  {{user.phone}}</p>
+
+        <h3>Emergency Contact</h3>
+        <p><span class="label">First Name:</span>  {{user.emergency_first}}</p>
+        <p><span class="label">Last Name:</span>  {{user.emergency_last}}</p>
+        <p><span class="label">Email:</span>  {{user.emergency_email}}</p>
+        <p><span class="label">Phone:</span>  {{user.emergency_phone}}</p>
+
+        <h3>Administrative</h3>
+        <p>Account created on:  {{user.date_joined}}</p>
+        <p>Accepted class policies on:  {{user.accept_terms}}</p>
+    {% endif %}
+
+{% endblock %}

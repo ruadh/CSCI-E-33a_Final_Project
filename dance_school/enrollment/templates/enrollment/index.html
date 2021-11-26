@@ -1,0 +1,39 @@
+{% extends "enrollment/layout.html" %}
+{% load static %}
+{% load tz %}
+
+{% block body %}
+
+{# Container for fading JavaScript-created error messages #}
+<div id="main-alert-fading" class="alert alert-fade" role="alert">
+</div>
+
+{# Container for persistent Django-created error messages #}
+{% if message %}
+    <div id="main-alert-persistent" class="alert alert-danger">
+        {{message}}
+    </div>
+{% endif %}
+
+<h2>This is the index block</h2>
+
+
+        {# CITATION:  based on the Vacara example in Vlad's section #}
+        <nav role="navigation">
+            <ul class="pagination">
+                {% if page.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{page.previous_page_number}}">Previous</a></li>
+                {% endif %}
+
+                <li class="page-item"><a class="page-link" href="?page={{page.number}}">{{page.number}}</a></li>
+
+                {% if page.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{page.next_page_number}}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+
+</div>
+
+
+{% endblock %}

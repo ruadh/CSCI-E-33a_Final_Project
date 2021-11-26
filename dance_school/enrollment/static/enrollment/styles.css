@@ -1,0 +1,16 @@
+/* NOTE:    This app's look & feel is also affected by Boostrap CSS */
+
+
+h2 {
+    color:red;
+}
+
+form label,
+form input[type="submit"] {
+    display: block;
+}
+
+.label {
+    color: red;
+}
+

@@ -66,6 +66,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                # CITATION: https://chriskief.com/2013/09/19/access-django-constants-from-settings-py-in-a-template/
+                'enrollment.context_processors.global_settings'
             ],
         },
     },
@@ -124,3 +126,17 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 AUTH_USER_MODEL = 'enrollment.User'
+
+
+
+# ENTER YOUR SCHOOL'S CUSTOMIZATIONS HERE:
+# NOTE:  these must also be added to context_processors.py
+
+# System's default display timezone - can be overriden by user preference
+DEFAULT_TIMEZONE = 'America/New_York'
+
+# The name of your school
+SCHOOL_NAME = 'Belly Dance Somerville'
+
+# The name of your class policies
+SCHOOL_POLICIES = 'the Belly Dance Somerville Policies and Community Agreement'
