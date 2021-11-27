@@ -28,6 +28,15 @@ The models used in this project.  Substantial changes made.
 #### Weekdays handling
 I chose to store weekdays as integers instead of as their names, which will support the date calculation features in the "better" and "best" portions of the proposal.  This requires translating them back into their names when we use them in the UI.  I could have done the opposite: store the text and translate to numbers when that's what's needed.  Either would work fine for my proposal features (I'd be using the int and text versions equally), but storing the integers opens the door to internationalization or changing to day abbreviations (Mon vs. Monday) if desired.
 
+#### Price limits
+Realistically, most class fees will be in the hundreds of dollars, and order totals only occasionally exceed $1,000.  However, I set the max_digits on those fields to support line item prices in the tens of thousands of dollars, and purchase prices in the hundreds of thousands of dollars.  It's always wise to have a "fudge factor", and other schools may have premium offerings or pricing models that require higher amounts.  This also leaves room for future enhancemnts, like allowing registrations for multiple students in a single order (such as a parent and child taking class together).
+
+#### Orders' required fields
+A new Order object requires only the student's foreign key because other values 
+
+#### Stored values
+Offering objects store their course's title and subtitle at the time of creation.  This lets us change course details over time, while still maintaining a link between enrollments and courses and making sure that students' enrollment histories reflect the course details that were true at the time of enrollment.  A consequence of this is that if an admin wants to make changes to a course after creating its current offerings, they'll need to update the offerings manually.  A future enhancement would be to allow them to copy over the changes (or lock them out of making changes while registration is open), but since there is a manual work-around, it's not a high enough priority to include in this project's scope. 
+
 #### TO DO:  MAYBE NOT!!!  Users as Model Forms
 The provided starter files used HTML form in registration.html.   I decided to switch to model forms so we can take advantage on on-page validation, and so we can easily populate the form for an "update your profile" feature.  
 

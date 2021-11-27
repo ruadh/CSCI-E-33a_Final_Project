@@ -10,6 +10,7 @@ from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
     # Timezones list approach from:  https://stackoverflow.com/a/45867250
+    # TO DO:  see if the "timezones" bit is still needed
     timezones = tuple(zip(pytz.all_timezones, pytz.all_timezones))
     timezone = models.CharField(max_length=32, choices=timezones,
                                 default=settings.DEFAULT_TIMEZONE)
@@ -55,7 +56,7 @@ class Semester(models.Model):
 
 
 class Course(models.Model):
-    title = models.CharField(max_length=16, null=True, blank=True)
+    title = models.CharField(max_length=64, null=False, blank=False)
     subtitle = models.CharField(max_length=256, null=False, blank=False)
     description = models.TextField(max_length=4096, null=False, blank=False)
     requirements = models.CharField(max_length=256, null=False, blank=False)
@@ -66,15 +67,16 @@ class Course(models.Model):
 
 
 class Offering(models.Model):
-    
     course = models.ForeignKey(
         Course, on_delete=PROTECT, null=False, blank=False, related_name='offerings')
     semester = models.ForeignKey(
         Semester, on_delete=PROTECT, null=False, blank=False, related_name='offerings')
     location = models.ForeignKey(
         Location, on_delete=PROTECT, null=False, blank=False, related_name='offerings')
+    stored_title = models.CharField(max_length=64, null=True, blank=True)
+    stored_subtitle = models.CharField(max_length=256, null=True, blank=True)
     price = models.DecimalField(
-        max_digits=5, decimal_places=2, null=False, blank=False)
+        max_digits=7, decimal_places=2, null=False, blank=False)
     weekday = models.IntegerField(choices=settings.WEEKDAYS, null=False, blank=False)
     start_time = models.TimeField(null=False, blank=False)
     end_time = models.TimeField(null=False, blank=False)
@@ -92,3 +94,36 @@ class Offering(models.Model):
 
     def __str__(self):
         return f'{self.course.title} - {self.weekday_name}s - {self.semester.name}'
+
+
+class Order(models.Model):
+    student = models.ForeignKey(User, on_delete=PROTECT, null=False, blank=False)
+    discount = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    # total = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    completed = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
+    @property
+    def subtotal(self):
+        try:
+            amount = self.enrollment.aggregate(sum('price'))
+        # TO DO:  is this the right exception?
+        except Exception:
+            return None
+        return amount
+
+    @property
+    def total(self):
+        return self.subtotal - self.discount
+
+    def __str__(self):
+        return f'{self.student} on {self.completed}'
+
+
+class Enrollment(models.Model):
+    order = models.ForeignKey(Order, on_delete=PROTECT, null=False, blank=False)
+    offering = models.ForeignKey(Offering, on_delete=PROTECT, null=False, blank=False)
+    planned_absences = models.CharField(max_length=1024, null=True, blank=True)
+    price = models.DecimalField(max_digits=6, decimal_places=2, null=False, blank=False)
+
+    def __str__(self):
+        return f'{self.offering.stored_title} {self.offering.weekday_name} {self.offering.semester.name}'
