@@ -127,6 +127,15 @@ STATIC_URL = '/static/'
 
 AUTH_USER_MODEL = 'enrollment.User'
 
+WEEKDAYS = (
+       (0, 'Monday'),
+       (1, 'Tuesday'),
+       (2, 'Wednesday'),
+       (3, 'Thursday'),
+       (4, 'Friday'),
+       (5, 'Saturday'),
+       (6, 'Sunday'),
+   )
 
 
 # ENTER YOUR SCHOOL'S CUSTOMIZATIONS HERE:
@@ -140,3 +149,4 @@ SCHOOL_NAME = 'Belly Dance Somerville'
 
 # The name of your class policies
 SCHOOL_POLICIES = 'the Belly Dance Somerville Policies and Community Agreement'
+
