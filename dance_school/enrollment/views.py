@@ -61,17 +61,13 @@ def register(request):
         if password != confirmation:
             return render(request, 'enrollment/register.html', {
                 'message': 'Passwords must match.',
-                'timezones': timezones,
-                'default_timezone': settings.DEFAULT_TIMEZONE
             })
         if password == '':
-            messages.error(request, 'Password cannot be blank')
             return render(request, 'enrollment/register.html', {
-                'timezones': timezones,
-                'default_timezone': settings.DEFAULT_TIMEZONE
+                'message': 'Password cannot be blank.',
             })
 
-        # TO DO:  Check for required fields
+        # Check for required fields
         first = request.POST['first-name']
         last = request.POST['last-name']
         email = request.POST['email']
@@ -80,11 +76,19 @@ def register(request):
         emergency_last = request.POST['emergency-last-name']
         emergency_email = request.POST['emergency-email']
         emergency_phone = request.POST['emergency-phone']
-        accept_terms = request.POST['accept-terms']
+        # accept_terms = request.POST['accept-terms']
+        accept_terms = request.POST.get('accept-terms', '') == 'on'
 
-        if accept_terms != 'Yes':
+        # TO DO:  Refactor:  move this to a separate function with different scenarios?
+        if first == '' or last == '' or email == '' or phone == '' or emergency_first == '' or emergency_last == '' or emergency_email == '' or emergency_phone == '':
             return render(request, 'enrollment/register.html', {
-                'message': 'You must accept the class policies.',
+                'message': 'You must enter all required fields.',
+            })
+
+        if accept_terms != True:
+        # if accept_terms != 'Yes':
+            return render(request, 'enrollment/register.html', {
+                'message': f'You must accept the class policies.  {accept_terms}',
             })
 
         # Attempt to create new user
@@ -110,7 +114,7 @@ def register(request):
             })
         login(request, user)
         # TO DO:  GO TO THE NEW URL, NOT RENDER
-        view_profile(request, user.id)
+        return view_profile(request, user.id)
     else:
         return render(request, 'enrollment/register.html')
 
@@ -119,9 +123,9 @@ def register(request):
 # NAVIGATION
 
 def index(request):
-    # return HttpResponse('Dance school app!')
     return render(request, 'enrollment/index.html')
 
 
 def view_profile(request, id):
+    # TO DO:  Make this load a new page instead
     return render(request, 'enrollment/profile.html')

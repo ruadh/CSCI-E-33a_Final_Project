@@ -11,6 +11,6 @@ form input[type="submit"] {
 }
 
 .label {
-    color: red;
+    font-weight: bold;
 }
 
