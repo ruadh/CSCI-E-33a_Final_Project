@@ -15,7 +15,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django import forms
 
-from .models import Offering, User, Semester, Location, Course
+from .models import Offering, Order, User, Semester, Location, Course, LineItem
 
 # AUTHENTICATION
 # CITATION:  Adapted from provided starter files in earlier projects
@@ -136,8 +136,14 @@ def index(request, page=None):
 def view_profile(request, id):
     # TO DO:  Make this load a new page instead
     # TO DO:  Security:  own profile only (for now) OR admin
-    return render(request, 'enrollment/profile.html')
-
+    orders = completed_orders(request, id)
+    if request.user.id == id or request.user.is_staff:
+        return render(request, 'enrollment/profile.html', {
+            'orders': orders,
+        })
+    else:
+        # TO DO:  add an error message for not authorized
+        return index(request)
 
 
 # UTILITY
@@ -163,4 +169,9 @@ def paginate_offerings(request, offerings):
 
 # API
 
-
+def completed_orders(request, user):
+    try:
+        orders = Order.objects.filter(student=user).exclude(completed=None)
+    except Order.DoesNotExist:
+        return None
+    return orders

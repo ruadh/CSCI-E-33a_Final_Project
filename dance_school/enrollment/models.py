@@ -1,9 +1,10 @@
 from django.db.models.deletion import PROTECT
-from django.db.models.expressions import F
 import pytz
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db.models import Sum
+
 
 # Create your models here.
 
@@ -97,19 +98,18 @@ class Offering(models.Model):
 
 
 class Order(models.Model):
-    student = models.ForeignKey(User, on_delete=PROTECT, null=False, blank=False)
+    student = models.ForeignKey(User, on_delete=PROTECT, null=False, blank=False, related_name='orders')
     discount = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     # total = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
-    completed = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    completed = models.DateTimeField(null=True, blank=True)
 
     @property
     def subtotal(self):
         try:
-            amount = self.enrollment.aggregate(sum('price'))
-        # TO DO:  is this the right exception?
+            amount = self.line_items.aggregate(Sum('price'))['price__sum']
         except Exception:
-            return None
-        return amount
+            return 0
+        return 0 if amount == None else amount
 
     @property
     def total(self):
@@ -119,9 +119,9 @@ class Order(models.Model):
         return f'{self.student} on {self.completed}'
 
 
-class Enrollment(models.Model):
-    order = models.ForeignKey(Order, on_delete=PROTECT, null=False, blank=False)
-    offering = models.ForeignKey(Offering, on_delete=PROTECT, null=False, blank=False)
+class LineItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=PROTECT, null=False, blank=False, related_name='line_items')
+    offering = models.ForeignKey(Offering, on_delete=PROTECT, null=False, blank=False, related_name='line_items')
     planned_absences = models.CharField(max_length=1024, null=True, blank=True)
     price = models.DecimalField(max_digits=6, decimal_places=2, null=False, blank=False)
 

@@ -37,6 +37,9 @@ A new Order object requires only the student's foreign key because other values
 #### Stored values
 Offering objects store their course's title and subtitle at the time of creation.  This lets us change course details over time, while still maintaining a link between enrollments and courses and making sure that students' enrollment histories reflect the course details that were true at the time of enrollment.  A consequence of this is that if an admin wants to make changes to a course after creating its current offerings, they'll need to update the offerings manually.  A future enhancement would be to allow them to copy over the changes (or lock them out of making changes while registration is open), but since there is a manual work-around, it's not a high enough priority to include in this project's scope. 
 
+#### Line Items 
+The LineItems object represents pending enrollments (still in a shopping cart) and completed enrollments (belonging to a completed order).  I decided to call it "line items" instead of enrollments, because a likely future enhancement would be to also allow students to add non-class products to their carts.
+
 #### TO DO:  MAYBE NOT!!!  Users as Model Forms
 The provided starter files used HTML form in registration.html.   I decided to switch to model forms so we can take advantage on on-page validation, and so we can easily populate the form for an "update your profile" feature.  
 
