@@ -137,9 +137,12 @@ WEEKDAYS = (
        (6, 'Sunday'),
    )
 
+# TO DO:  Replace this with a more realistic size
+PAGE_SIZE = 5
+
 
 # ENTER YOUR SCHOOL'S CUSTOMIZATIONS HERE:
-# NOTE:  these must also be added to context_processors.py
+# NOTE:  These must also be added to context_processors.py to be used by Django templates and/or JavaScript
 
 # System's default display timezone - can be overriden by user preference
 DEFAULT_TIMEZONE = 'America/New_York'
@@ -149,4 +152,7 @@ SCHOOL_NAME = 'Belly Dance Somerville'
 
 # The name of your class policies
 SCHOOL_POLICIES = 'the Belly Dance Somerville Policies and Community Agreement'
+
+# The text to be displayed if no offerings are found
+NO_OFFERINGS = 'Check back soon for information on our upcoming classes.'
 

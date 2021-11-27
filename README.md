@@ -1,12 +1,64 @@
 # CSCI-E-33a_Final Project
 Harvard Extension School CSCI E-33a "Web Programming with Python and JavaScript" Final Project
 
-DEPENDENCIES:
+## About this project
+
+## What each file does
+
+### .env
+Stores the SECRET_KEY for security.  All my own work.
+
+### context_processors.py
+Lets me pass values from settings.py to Django templates and/or JS.  All my own work.
+CITATION:  Learned approach from https://chriskief.com/2013/09/19/access-django-constants-from-settings-py-in-a-template/
+
+### settings.py
+Django configuration.  Mostly standard, except that I added:
+1. A context processor so I can pass values in this file to Django templates and/or JS
+2. Settings that may vary by dance school, such as the school name, local time zone, default class capacity, etc.
+
+### models.py
+The models used in this project.  Substantial changes made.
+
+## DESIGN CHOICES:
+
+
+### Model choices
+
+#### Weekdays handling
+I chose to store weekdays as integers instead of as their names, which will support the date calculation features in the "better" and "best" portions of the proposal.  This requires translating them back into their names when we use them in the UI.  I could have done the opposite: store the text and translate to numbers when that's what's needed.  Either would work fine for my proposal features (I'd be using the int and text versions equally), but storing the integers opens the door to internationalization or changing to day abbreviations (Mon vs. Monday) if desired.
+
+#### TO DO:  MAYBE NOT!!!  Users as Model Forms
+The provided starter files used HTML form in registration.html.   I decided to switch to model forms so we can take advantage on on-page validation, and so we can easily populate the form for an "update your profile" feature.  
+
+This also lets us control which fields are required on the form level vs. the model level.  A likely future enhancement would be to allow users to create accounts with limited information (basic contact info), but require more information at before they check out (terms & conditions, emergency contact info, etc.)   We can't do that if the fields are required at the model level.
+
+
+### Non-required features
+I chose to include a few features that are not required for the features in my proposal, but that lay the groundwork for some future enhancements that I already have in mind.
+
+#### User timezones
+The current proposal covers only in-person offerings, which we can assume all happen in the same time zone.  However, I chose to include user-specific timezones because:
+1. It lets us add support for online offerings in the future (Zoom classes, webinars, etc.), 
+2. I already implemented this in earlier projects, so it isn't any extra work.
+
+
+### Settings
+
+I chose to put school-specific values like the school name in settings.py.  This keeps my code DRY, lets us centralize updates, and makes this app customizeable for other schools.  
+A more user-friendly way to handle that would be to create a Settings model so these values can be managed in Django Admin.  This is a likely future enhancement, but it's out
+of scope for the final project:  it sounds like a quick addition, but we'd also need to ensure that the table only ever has one record, etc.
+
+
+
+
+
+## DEPENDENCIES:
 
 1) SECRET_KEY
 
 The Django SECRET_KEY value is stored in dance_school/.env
-To access this, you must install python-dotenv in your virtual environment.
+(To access this, you must install python-dotenv in your virtual environment, although this should be handled by requirements.txt)
 If this file was not provided (ex: on GitHub), you will need to create it and enter the following:
 SECRET_KEY = 'a-new-secure-string'  
 (Replacing 'a-new-secure-string' with the string of your choice.)

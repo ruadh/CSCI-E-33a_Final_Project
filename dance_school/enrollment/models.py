@@ -48,6 +48,7 @@ class Semester(models.Model):
     registration_open = models.DateTimeField(null=False, blank=False)
     registration_close = models.DateTimeField(null=False, blank=False)
     recital_date = models.DateTimeField(null=True, blank=True)
+    hide = models.BooleanField(default=True, null=True, blank=False)
 
     def __str__(self):
         return self.name
@@ -84,5 +85,10 @@ class Offering(models.Model):
     schedule_notes = models.CharField(max_length=2048, null=True, blank=True)
     notes = models.CharField(max_length=2048, null=True, blank=True)
 
+    @property
+    def weekday_name(self):
+        #TO DO:  Is there a more elegant way of doing this?  Put it in views?  Can I refer to views here?
+        return settings.WEEKDAYS[self.weekday][1]
+
     def __str__(self):
-        return f'{self.course.title} - {self.semester.name}'
+        return f'{self.course.title} - {self.weekday_name}s - {self.semester.name}'

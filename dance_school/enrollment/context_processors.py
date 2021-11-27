@@ -8,4 +8,5 @@ def global_settings(request):
     'DEFAULT_TIMEZONE': settings.DEFAULT_TIMEZONE,
     'SCHOOL_NAME': settings.SCHOOL_NAME,
     'SCHOOL_POLICIES': settings.SCHOOL_POLICIES,
-        }
+    'NO_OFFERINGS': settings.NO_OFFERINGS,
+    }

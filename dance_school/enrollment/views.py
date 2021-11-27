@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 import datetime
@@ -6,6 +7,7 @@ import pytz
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.core.paginator import Paginator
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -13,7 +15,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django import forms
 
-from .models import User
+from .models import Offering, User, Semester, Location, Course
 
 # AUTHENTICATION
 # CITATION:  Adapted from provided starter files in earlier projects
@@ -122,10 +124,43 @@ def register(request):
 
 # NAVIGATION
 
-def index(request):
-    return render(request, 'enrollment/index.html')
+def index(request, page=None):
+    # TO DO:  Consider sort order:  custom?  core/non-core?
+    offerings = Offering.objects.filter(semester=latest_semester()).order_by('course__title', 'weekday', 'start_time')
+    page = paginate_offerings(request, offerings)
+    return render(request, 'enrollment/index.html', {
+        'page': page,
+    })
 
-
+@login_required
 def view_profile(request, id):
     # TO DO:  Make this load a new page instead
+    # TO DO:  Security:  own profile only (for now) OR admin
     return render(request, 'enrollment/profile.html')
+
+
+
+# UTILITY
+
+def latest_semester():
+    try:
+        semester = Semester.objects.filter(hide=False).latest('start_date')
+    except Semester.DoesNotExist:
+        return None
+    return semester
+
+def paginate_offerings(request, offerings):
+    # CITATION:  Adapted from Vancara example project in Vlad's section
+
+    # Make sure there are posts before we try to paginate them
+    if offerings is None:
+        page = None
+    else:
+        page_num = request.GET.get('page', 1)
+        paginator = Paginator(offerings, settings.PAGE_SIZE)
+        page = paginator.page(page_num)
+    return page
+
+# API
+
+

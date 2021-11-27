@@ -15,9 +15,12 @@
     </div>
 {% endif %}
 
-<h2>This is the index block</h2>
+<h2>Join the Class</h2>
 
-
+    {% if page %}
+        {% for offering in page %}
+            <div>{{offering.course}}: {{offering.weekday_name}}s {{offering.start_time}}-{{offering.end_time}} at {{offering.location}}</div>
+        {% endfor %}
         {# CITATION:  based on the Vacara example in Vlad's section #}
         <nav role="navigation">
             <ul class="pagination">
@@ -32,6 +35,9 @@
                 {% endif %}
             </ul>
         </nav>
+    {% else %}
+        <div>{{NO_OFFERINGS}}</div>
+    {% endif %}
 
 </div>
 
