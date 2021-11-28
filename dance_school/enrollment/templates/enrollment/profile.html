@@ -2,55 +2,95 @@
 
 {% block body %}
 
-    <h2>My Profile</h2>
+{% if message %}
+<div id="main-alert-persistent" class="alert alert-danger">{{ message }}</div>
+{% endif %}
 
-    {% if message %}
-        <div>{{ message }}</div>
-    {% endif %}
-
-    <div class = "row">
-    {% if user %}
-        <div class="col">
-            <h3>Account</h3>
-            <p><span class="label">Username:</span>  {{user.username}}</p>
-            <p><span class="label">Password:</span>  ****************</p>
-
-            <h3>About Me</h3>
-            <p><span class="label">First Name:</span>  {{user.first_name}}</p>
-            <p><span class="label">Last Name:</span>  {{user.last_name}}</p>
-            <p><span class="label">Email:</span>  {{user.email}}</p>
-            <p><span class="label">Phone:</span>  {{user.phone}}</p>
-
-            <h3>Emergency Contact</h3>
-            <p><span class="label">First Name:</span>  {{user.emergency_first}}</p>
-            <p><span class="label">Last Name:</span>  {{user.emergency_last}}</p>
-            <p><span class="label">Email:</span>  {{user.emergency_email}}</p>
-            <p><span class="label">Phone:</span>  {{user.emergency_phone}}</p>
-
-            <h3>Administrative</h3>
-            <p><span class="label">Account created on:</span>  {{user.date_joined}}</p>
-            <p><span class="label">Accepted class policies on:</span>  {{user.accept_terms}}</p>
-        </div>
-    {% endif %}
-
-    {% if orders %}
-        <div class="col">
-            <h3>Orders</h3>
-            {% for order in orders %}
-                <div> {{order.completed}}.  Total:  {{order.total}}  Subtotal: {{order.subtotal}}</div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
-    {# TO DO #}
-    {% if line_items %}
+<div class="row">
+    {% if profile %}
     <div class="col">
-        <h3>Enrollments</h3>
-        {% for line_item in line_items %}
-            <div> {{line_item.price}}</div>
-        {% endfor %}
+        <h2>User Profile</h2>
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">Account</h3>
+                <p><span class="label">Username:</span> {{profile.username}}</p>
+                <p><span class="label">Password:</span> ****************</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">About Me</h3>
+                <p><span class="label">First Name:</span> {{profile.first_name}}</p>
+                <p><span class="label">Last Name:</span> {{profile.last_name}}</p>
+                <p><span class="label">Email:</span> {{profile.email}}</p>
+                <p><span class="label">Phone:</span> {{profile.phone}}</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">Emergency Contact</h3>
+                <p><span class="label">First Name:</span> {{profile.emergency_first}}</p>
+                <p><span class="label">Last Name:</span> {{profile.emergency_last}}</p>
+                <p><span class="label">Email:</span> {{profile.emergency_email}}</p>
+                <p><span class="label">Phone:</span> {{profile.emergency_phone}}</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">Administrative</h3>
+                <p><span class="label">Account created on:</span> {{profile.date_joined}}</p>
+                <p><span class="label">Accepted class policies on:</span> {{profile.accept_terms}}</p>
+            </div>
+        </div>
     </div>
     {% endif %}
 
+    <!-- On larger screens, put orders and enrollment history in their own column-->
+    <div class="col-md">
+
+        {% if semesters %}
+            <h2>Enrollment History</h2>
+            {% for semester in semesters %}
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title">{{semester.name}}</h3>
+                        <ul>
+                            {% for enrollment in semester.enrollments %}
+                                <li>{{enrollment.offering.stored_title}} {{enrollment.offering.weekday_name}}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+ 
+        {% if orders %}
+        <h2>Orders</h2>
+        {% for order in orders %}
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">Order: {{order.id}}</h3>
+                    <p>Completed: {{order.completed}}</p>
+                    {% for item in order.items %}
+                        <ul>
+                            <li>{{item.offering.stored_title}} {{item.offering.weekday_name}} ${{item.price}}
+                                {% if item.planned_absences %}
+                                    (Planned Absences:  {{item.planned_absences}})
+                                {% endif %}
+                            </li>
+                        </ul>
+                    {% endfor %}
+                    <p><span class="label">Subtotal:</span> ${{order.subtotal}}</p>
+                    <p><span class="label">Discounts:</span> -${{order.discount}}</p>
+                    <p><span class="label">Total:</span> ${{order.total}}</p>
+                </div>
+            </div>
+        {% endfor %}
+        {% endif %}
     </div>
+
+</div>
 {% endblock %}

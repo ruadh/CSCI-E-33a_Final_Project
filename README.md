@@ -79,3 +79,8 @@ Alternatively, if you are not running this in production and not sharing the cod
 SECRET_KEY = os.getenv('SECRET_KEY')
 with
 SECRET_KEY = 'a-new-secure-string'
+
+
+## CITATIONS:
+
+I added comments in my code with the prefix "CITATION:" for code borrowed from outside sources (stack overflow, blogs, project starter files, section examples, etc.).  I did NOT include citations for code adapted from official documentation (Django, Bootstrap), or when an outside source pointed me in the right direction but the work is primarily my own.

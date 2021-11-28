@@ -93,6 +93,11 @@ class Offering(models.Model):
         #TO DO:  Is there a more elegant way of doing this?  Put it in views?  Can I refer to views here?
         return settings.WEEKDAYS[self.weekday][1]
 
+    @property
+    def spots_left(self):
+        # TO DO: 
+        return self.capacity
+
     def __str__(self):
         return f'{self.course.title} - {self.weekday_name}s - {self.semester.name}'
 
@@ -113,7 +118,11 @@ class Order(models.Model):
 
     @property
     def total(self):
-        return self.subtotal - self.discount
+        return self.subtotal - self.discount if self.discount !=None else self.subtotal
+
+    @property
+    def semester(self):
+        return self.line_items.first().offering.semester.name
 
     def __str__(self):
         return f'{self.student} on {self.completed}'

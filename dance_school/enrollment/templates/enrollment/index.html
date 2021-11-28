@@ -18,23 +18,41 @@
 <h2>Join the Class</h2>
 
     {% if page %}
-        {% for offering in page %}
-            <div>{{offering.course}}: {{offering.weekday_name}}s {{offering.start_time}}-{{offering.end_time}} at {{offering.location}}</div>
-        {% endfor %}
-        {# CITATION:  based on the Vacara example in Vlad's section #}
-        <nav role="navigation">
-            <ul class="pagination">
-                {% if page.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page={{page.previous_page_number}}">Previous</a></li>
-                {% endif %}
+    <div class="accordion" id="accordionExample"></div>
+            {% for offering in page %}
+            <div class="card" data-offering-id="{{offering.id}}"">
+                <div class="card-header" id="heading{{offering.id}}">
+                  <h5 class="mb-0">
+                    <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse{{offering.id}}" aria-expanded="true" aria-controls="collapse{{offering.id}}">
+                        {{offering.course}}: {{offering.weekday_name}}s {{offering.start_time}}-{{offering.end_time}} at {{offering.location}}
+                    </button>
+                  </h5>
+                </div>
+            
+                <div id="collapse{{offering.id}}" class="collapse" aria-labelledby="heading{{offering.id}}" data-parent="#accordionExample">
+                  <div class="card-body">
+                    Details go here.  {{offering.spots_left}} spots remaining.
+                  </div>
+                  <button class="btn btn-primary add">Add to Cart</button>
+                </div>
+              </div>
+            <div class="card">
+            {% endfor %}
+            {# CITATION:  based on the Vacara example in Vlad's section #}
+            <nav role="navigation">
+                <ul class="pagination">
+                    {% if page.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{page.previous_page_number}}">Previous</a></li>
+                    {% endif %}
 
-                <li class="page-item"><a class="page-link" href="?page={{page.number}}">{{page.number}}</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{page.number}}">{{page.number}}</a></li>
 
-                {% if page.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{page.next_page_number}}">Next</a></li>
-                {% endif %}
-            </ul>
-        </nav>
+                    {% if page.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{page.next_page_number}}">Next</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+    </div>
     {% else %}
         <div>{{NO_OFFERINGS}}</div>
     {% endif %}

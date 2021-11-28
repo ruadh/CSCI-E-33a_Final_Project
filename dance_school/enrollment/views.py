@@ -1,11 +1,12 @@
 from django.contrib.auth.decorators import login_required
-from django.http.request import HttpRequest
-from django.http.response import HttpResponse
+# from django.http.request import HttpRequest
+# from django.http.response import HttpResponse
 import datetime
+from django.http.response import HttpResponse
 import pytz
 # from django.db import models
 from django.conf import settings
-from django.contrib import messages
+# from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.core.paginator import Paginator
 from django.db import IntegrityError
@@ -13,12 +14,13 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
-from django import forms
+# from django import forms
 
 from .models import Offering, Order, User, Semester, Location, Course, LineItem
 
 # AUTHENTICATION
 # CITATION:  Adapted from provided starter files in earlier projects
+
 
 def login_view(request):
 
@@ -55,7 +57,7 @@ def register(request):
     timezones = pytz.common_timezones
 
     if request.method == 'POST':
-        
+
         # Ensure password matches confirmation
         username = request.POST['username']
         password = request.POST['password']
@@ -88,9 +90,9 @@ def register(request):
             })
 
         if accept_terms != True:
-        # if accept_terms != 'Yes':
+            # if accept_terms != 'Yes':
             return render(request, 'enrollment/register.html', {
-                'message': f'You must accept the class policies.  {accept_terms}',
+                'message': 'You must accept the class policies.',
             })
 
         # Attempt to create new user
@@ -121,33 +123,60 @@ def register(request):
         return render(request, 'enrollment/register.html')
 
 
-
 # NAVIGATION
 
-def index(request, page=None):
+def index(request, page=None, message=None):
     # TO DO:  Consider sort order:  custom?  core/non-core?
-    offerings = Offering.objects.filter(semester=latest_semester()).order_by('course__title', 'weekday', 'start_time')
+    offerings = Offering.objects.filter(semester=latest_semester()).order_by(
+        'course__title', 'weekday', 'start_time')
     page = paginate_offerings(request, offerings)
     return render(request, 'enrollment/index.html', {
         'page': page,
+        'message': message
     })
+
 
 @login_required
 def view_profile(request, id):
-    # TO DO:  Make this load a new page instead
-    # TO DO:  Security:  own profile only (for now) OR admin
-    orders = completed_orders(request, id)
+    # Non-admin users may only view their own profiles
     if request.user.id == id or request.user.is_staff:
+        try:
+            profile = User.objects.get(id=id)
+        except User.DoesNotExist:
+            return render(request, 'enrollment/profile.html', {
+                'orders': None,
+                'message': f'User {id} not found.'
+            })
+
+        # Prepare the items to pass to the Django template:
+        # CITATION:  Passing nested context items:  https://stackoverflow.com/q/6540032
+
+        # Pass the students' completed enrollments, grouped by semester
+        # Find all semesters in which the student has completed enrollments
+        semesters = Semester.objects.filter(offerings__line_items__order__student=id).order_by('-start_date')
+        for semester in semesters:
+            semester.enrollments = LineItem.objects.filter(order__student=id).filter(offering__semester=semester).exclude(order__completed=None)
+        
+        # Pass the order history, including nested line items
+        orders = completed_orders(request, id).order_by('-completed')
+        for order in orders:
+            order.items = order.line_items.all()
+        
         return render(request, 'enrollment/profile.html', {
             'orders': orders,
+            'semesters': semesters,
+            'profile': profile
         })
     else:
-        # TO DO:  add an error message for not authorized
-        return index(request)
+        return render(request, 'enrollment/profile.html', {
+            'orders': None,
+            'message': 'You may not view other users\' profiles'
+        })
 
 
 # UTILITY
 
+# Returns the latest semester that is not in hidden mode
 def latest_semester():
     try:
         semester = Semester.objects.filter(hide=False).latest('start_date')
@@ -155,9 +184,9 @@ def latest_semester():
         return None
     return semester
 
+
 def paginate_offerings(request, offerings):
     # CITATION:  Adapted from Vancara example project in Vlad's section
-
     # Make sure there are posts before we try to paginate them
     if offerings is None:
         page = None
@@ -167,7 +196,7 @@ def paginate_offerings(request, offerings):
         page = paginator.page(page_num)
     return page
 
-# API
+# All completed orders for a given user
 
 def completed_orders(request, user):
     try:
@@ -175,3 +204,5 @@ def completed_orders(request, user):
     except Order.DoesNotExist:
         return None
     return orders
+
+# API
