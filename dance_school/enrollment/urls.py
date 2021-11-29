@@ -17,7 +17,7 @@ urlpatterns = [
     # path('offerings/<int:id>', views.view_offering, name='view_offering'),
 
     # # API
-    # path('posts/<int:id>', views.save_post, name='update_post'),
+    path('add-to-cart/<int:id>', views.add_to_cart, name='add_to_cart'),
     # path('likes/<int:id>', views.toggle_like, name='toggle_like'),
     # path('follows/<int:id>', views.toggle_follow, name='toggle_follow'),
 ]

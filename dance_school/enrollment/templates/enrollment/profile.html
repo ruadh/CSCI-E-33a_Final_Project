@@ -84,7 +84,7 @@
                         </ul>
                     {% endfor %}
                     <p><span class="label">Subtotal:</span> ${{order.subtotal}}</p>
-                    <p><span class="label">Discounts:</span> -${{order.discount}}</p>
+                    <p><span class="label">Discounts:</span> -${{order.discount|default_if_none:"0.00"}}</p>
                     <p><span class="label">Total:</span> ${{order.total}}</p>
                 </div>
             </div>

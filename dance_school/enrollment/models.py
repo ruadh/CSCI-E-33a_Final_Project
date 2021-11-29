@@ -3,7 +3,8 @@ import pytz
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.db.models import Sum
+from django.db.models import Sum, Count
+from django.core.exceptions import ValidationError
 
 
 # Create your models here.
@@ -52,6 +53,17 @@ class Semester(models.Model):
     recital_date = models.DateTimeField(null=True, blank=True)
     hide = models.BooleanField(default=True, null=True, blank=False)
 
+    # CITATION:  https://stackoverflow.com/a/54011108
+    def clean(self):
+        # Clean is applied before required fields are checked, so we have to double-check here
+        if self.start_date != None and self.end_date != None and self.registration_open != None and self.registration_close != None:
+            if self.start_date >= self.end_date:
+                raise ValidationError(
+                    'Start date must be earlier than end date')
+            if self.registration_open >= self.registration_close:
+                raise ValidationError(
+                    'Registration open must be earlier than registration close')
+
     def __str__(self):
         return self.name
 
@@ -78,7 +90,8 @@ class Offering(models.Model):
     stored_subtitle = models.CharField(max_length=256, null=True, blank=True)
     price = models.DecimalField(
         max_digits=7, decimal_places=2, null=False, blank=False)
-    weekday = models.IntegerField(choices=settings.WEEKDAYS, null=False, blank=False)
+    weekday = models.IntegerField(
+        choices=settings.WEEKDAYS, null=False, blank=False)
     start_time = models.TimeField(null=False, blank=False)
     end_time = models.TimeField(null=False, blank=False)
     start_date = models.DateField(null=False, blank=False)
@@ -90,22 +103,40 @@ class Offering(models.Model):
 
     @property
     def weekday_name(self):
-        #TO DO:  Is there a more elegant way of doing this?  Put it in views?  Can I refer to views here?
+        # TO DO:  Is there a more elegant way of doing this?  Put it in views?  Can I refer to views here?
         return settings.WEEKDAYS[self.weekday][1]
 
     @property
     def spots_left(self):
-        # TO DO: 
-        return self.capacity
+        try:
+            sold = self.line_items.exclude(order__completed=None).aggregate(Count('id'))['id__count']
+        except Exception:
+            sold = 0
+        return self.capacity - sold
+
+    # CITATION:  https://stackoverflow.com/a/54011108
+    def clean(self):
+        # Clean is applied before required fields are checked, so we have to double-check here
+        if self.start_date != None and self.end_date != None and self.start_time != None and self.end_time != None and self.backup_date != None:
+            if self.start_date >= self.end_date:
+                raise ValidationError(
+                    'Start date must be earlier than end date')
+            if self.start_time >= self.end_time:
+                raise ValidationError(
+                    'Start time must be earlier than end time')
+            if self.start_date >= self.backup_date:
+                raise ValidationError(
+                    'Backup date must be later than start date')
 
     def __str__(self):
         return f'{self.course.title} - {self.weekday_name}s - {self.semester.name}'
 
 
 class Order(models.Model):
-    student = models.ForeignKey(User, on_delete=PROTECT, null=False, blank=False, related_name='orders')
-    discount = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
-    # total = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    student = models.ForeignKey(
+        User, on_delete=PROTECT, null=False, blank=False, related_name='orders')
+    discount = models.DecimalField(
+        max_digits=8, decimal_places=2, null=True, blank=True)
     completed = models.DateTimeField(null=True, blank=True)
 
     @property
@@ -118,21 +149,28 @@ class Order(models.Model):
 
     @property
     def total(self):
-        return self.subtotal - self.discount if self.discount !=None else self.subtotal
+        return self.subtotal - self.discount if self.discount != None else self.subtotal
 
     @property
     def semester(self):
         return self.line_items.first().offering.semester.name
 
     def __str__(self):
-        return f'{self.student} on {self.completed}'
+        if self.completed == None:
+            date_string = 'incomplete'
+        else:
+            date_string = self.completed.strftime("%x %X")
+        return f'{self.student} - {date_string}'
 
 
 class LineItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=PROTECT, null=False, blank=False, related_name='line_items')
-    offering = models.ForeignKey(Offering, on_delete=PROTECT, null=False, blank=False, related_name='line_items')
+    order = models.ForeignKey(Order, on_delete=PROTECT,
+                              null=False, blank=False, related_name='line_items')
+    offering = models.ForeignKey(
+        Offering, on_delete=PROTECT, null=False, blank=False, related_name='line_items')
     planned_absences = models.CharField(max_length=1024, null=True, blank=True)
-    price = models.DecimalField(max_digits=6, decimal_places=2, null=False, blank=False)
+    price = models.DecimalField(
+        max_digits=6, decimal_places=2, null=False, blank=False)
 
     def __str__(self):
         return f'{self.offering.stored_title} {self.offering.weekday_name} {self.offering.semester.name}'
