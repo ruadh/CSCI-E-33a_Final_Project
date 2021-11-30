@@ -20,6 +20,8 @@ Django configuration.  Mostly standard, except that I added:
 ### models.py
 The models used in this project.  Substantial changes made.
 
+
+
 ## DESIGN CHOICES:
 
 
@@ -62,6 +64,10 @@ A more user-friendly way to handle that would be to create a Settings model so t
 of scope for the final project:  it sounds like a quick addition, but we'd also need to ensure that the table only ever has one record, etc.
 
 
+### Passing the user
+
+In several functions, I chose to pass the user as a separate parameter instead of using request.user.  This is not needed for the features in my final project spec, but it leaves open the door for some future enhancements where the user we're interested in isn't necessarily the current user.  Ex: allowing a parent to register along with a child, or allowing an admin to view student information in the front end.
+
 
 
 
@@ -84,3 +90,9 @@ SECRET_KEY = 'a-new-secure-string'
 ## CITATIONS:
 
 I added comments in my code with the prefix "CITATION:" for code borrowed from outside sources (stack overflow, blogs, project starter files, section examples, etc.).  I did NOT include citations for code adapted from official documentation (Django, Bootstrap), or when an outside source pointed me in the right direction but the work is primarily my own.
+
+
+## EVALUATION TIPS:
+
+### Semester dates
+Many of my features depend on the semester dates.  I set up some sample semesters with realistic dates, but you may want to change those in Django Admin to see them in action.  (ex:  change the registration open/close dates to see how it prevents students from enrolling outside the registration window.)

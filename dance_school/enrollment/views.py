@@ -129,13 +129,29 @@ def register(request):
 # NAVIGATION
 
 def index(request, page=None, message=None):
-    # TO DO:  Consider sort order:  custom?  core/non-core?
+
+    # Add a paginated list of class offerings
     offerings = Offering.objects.filter(semester=latest_semester()).order_by(
-        'course__title', 'weekday', 'start_time')
+        'course__title', 'weekday', 'start_time'
+    )
     page = paginate_offerings(request, offerings)
+
+    # If a logged-in user has an active cart, populate it with their incomplete items
+    if request.user.is_authenticated:
+        cart = get_cart(request, request.user, False)
+        if cart:
+            cart.items = cart.line_items.all()
+    else:
+        cart = None
+
+    # Get the name of the latest semester for display
+    semester = latest_semester().name
+
     return render(request, 'enrollment/index.html', {
         'page': page,
-        'message': message
+        'cart': cart,
+        'message': message,
+        'semester': semester
     })
 
 
@@ -156,15 +172,19 @@ def view_profile(request, id):
 
         # Pass the students' completed enrollments, grouped by semester
         # Find all semesters in which the student has completed enrollments
-        semesters = Semester.objects.filter(offerings__line_items__order__student=id).order_by('-start_date')
+        # TO DO:  Fix this - joeuser is getting incompletes and unathecat is getting multiples
+        #         maybe look at aggregate/annotate instead?
+        semesters = Semester.objects.filter(
+            offerings__line_items__order__student=id).order_by('-start_date')
         for semester in semesters:
-            semester.enrollments = LineItem.objects.filter(order__student=id).filter(offering__semester=semester).exclude(order__completed=None)
-        
+            semester.enrollments = LineItem.objects.filter(order__student=id).filter(
+                offering__semester=semester).exclude(order__completed=None)
+
         # Pass the order history, including nested line items
         orders = completed_orders(request, id).order_by('-completed')
         for order in orders:
             order.items = order.line_items.all()
-        
+
         return render(request, 'enrollment/profile.html', {
             'orders': orders,
             'semesters': semesters,
@@ -180,6 +200,7 @@ def view_profile(request, id):
 # UTILITY
 
 # Returns the latest semester that is not in hidden mode
+# NOTE:  This WILL return the semester after registration is closed.  That's intentional.
 def latest_semester():
     try:
         semester = Semester.objects.filter(hide=False).latest('start_date')
@@ -199,6 +220,7 @@ def paginate_offerings(request, offerings):
         page = paginator.page(page_num)
     return page
 
+
 # All completed orders for a given user
 # NOTE:  the user we're intersted in may not be the requestor
 
@@ -209,20 +231,38 @@ def completed_orders(request, user):
         return None
     return orders
 
+
+# Get the latest incomplete order for a given user, (i.e., their current cart), or optionally create one
+# NOTE:  The UI should enforce no more than one incomplete cart, but if they do, we're only interested in the latest
+def get_cart(request, user, add=False):
+    try:
+        cart = Order.objects.get(student=request.user, completed=None)
+    except Order.DoesNotExist:
+        #If the user doesn't already have an open cart, create one
+        if add==True:
+            cart = Order(student=request.user)
+            cart.save()
+        else:
+            cart = None
+    return cart
+
+
 # Validate a line item before adding to cart or checking out
-# NOTE:  We're passing the user instead of using request.user in case we ever want to allow admins to enter
-#        registrations or allow someone to register someone else (ex: a parent registering with a child)
 # TO DO:  FINISH COMMENTS
-# Phase = 'add' or 'checkout'
+# Action = 'add' or 'checkout'
+
+
 def validate_item(offering, user, action):
-    # Make sure registration is still open
+    # Make sure we're in the registration window (also enforced by UI)
+    if offering.semester.registration_open > datetime.now(timezone.utc):
+        return JsonResponse({'error': f'Registration for {offering.semester} is not yet open.'}, status=400)
     if offering.semester.registration_close < datetime.now(timezone.utc):
-        return JsonResponse({'error': f'Registration is already closed for {offering.semester}'}, status=400)
+        return JsonResponse({'error': f'Registration is already closed for {offering.semester}.'}, status=400)
     # Make sure space is still available in the class
     if offering.spots_left < 1:
-        return JsonResponse({'error': 'Sorry, this class offering is full.'}, status=400)
+        return JsonResponse({'error': 'Sorry, this offering is full.'}, status=400)
     # See if the user is already registered for this offering
-    reg = LineItem.objects.filter(order__student=user,offering=offering)
+    reg = LineItem.objects.filter(order__student=user, offering=offering)
     if reg.exclude(order__completed=None).aggregate(Count('id'))['id__count']:
         return JsonResponse({'error': f'You are already registered for {offering.stored_title}.'}, status=400)
     if action == 'add':
@@ -249,30 +289,18 @@ def add_to_cart(request, id):
         if eligible != True:
             return eligible
 
-        # cart = Order(student=request.user)
-        # cart.save()
-
         # If the user doesn't already have an open order, create a new one
-        # TO DO:  Add note about get vs. filter, and how we only need the latest cart
-        try:
-            cart = Order.objects.get(student=request.user,completed=None)
-        except Order.DoesNotExist:
-            cart = Order(student=request.user)
-            cart.save()
+        cart = get_cart(request, request.user, True)
 
         # Create the line item record
-        item = LineItem(
+        line_item = LineItem(
             order=cart,
             offering=offering,
             price=offering.price
-            )
+        )
         # TO DO: Add support for planned absences, price, etc.
-        item.save()
+        line_item.save()
 
-        # TO DO:  Create the line item record
-        # return JsonResponse({'id': offering.id, 'saved_title': offering.stored_title}, status=200)
-        return JsonResponse({'error': f'success so far? {item.id}'}, status=400)
+        return JsonResponse(line_item.serialize(), status=200)
     else:
         return JsonResponse({'error': 'POST request required'}, status=400)
-
-    

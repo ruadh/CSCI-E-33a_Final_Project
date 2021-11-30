@@ -174,3 +174,12 @@ class LineItem(models.Model):
 
     def __str__(self):
         return f'{self.offering.stored_title} {self.offering.weekday_name} {self.offering.semester.name}'
+
+    # CITATION:     Adapted from provided models.py in Project 3
+    def serialize(self):
+        return {
+            'id': self.id,
+            'offering_display': f'{self.offering.stored_title} {self.offering.weekday_name}',
+            'price': self.offering.price
+        }
+
