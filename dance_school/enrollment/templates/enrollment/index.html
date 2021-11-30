@@ -74,14 +74,18 @@
     <div id="cart-container" class="col-md">
         <h2>Shopping Cart</h2>
         {% if cart %}
-            {# TEMP FOR TESTING #}
-            <h4>Order:  {{cart.id}}</h4>
             <ul id="cart-items">
             {% for item in cart.items %}
                 <li data-offering={{item.offering.id}}>{{item.offering.stored_title}} {{item.offering.weekday_name}} ${{item.price}} <button class="remove-button" data-item={{item.id}}>Remove</button></li>
             {% endfor %}
             </ul>
-            <p>Subtotal:  ${{cart.subtotal}}</p>
+            {% if cart.items %}
+                <p>Subtotal:  ${{cart.subtotal|default_if_none:"0.00"}}</p>
+                <p>Discounts:  ${{cart.discount|default_if_none:"0.00"}}</p>
+                <p>Total:  ${{cart.total|default_if_none:"0.00"}}</p>
+            {% else %}
+                <h4>No items in your cart.</h4>
+            {% endif %}
         {% else %}
             <h4>No items in your cart.</h4>
         {% endif %}
