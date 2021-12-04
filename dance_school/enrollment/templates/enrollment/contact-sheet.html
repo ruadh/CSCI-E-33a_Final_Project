@@ -1,0 +1,37 @@
+{% extends "enrollment/layout.html" %}
+
+{% block body %}
+
+{% if message %}
+<div id="main-alert-persistent" class="alert alert-danger">{{ message }}</div>
+{% endif %}
+
+<div class="row">
+
+    <!-- TO DO: Decide if this needs to be in a row at all-->
+    <div class="col-md">
+
+        {% if offering %}
+            <h2>{{offering.stored_title}} {{offering.weekday_name}}s at {{offering.start_time}}, {{offering.semester}}</h2>
+            {% if students %}
+                {% for student in students %}
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">{{student}}</h3>
+                            <p><span class="label">Email:  </span>{{student.email}}</p>
+                            <p><span class="label">Phone:  </span>{{student.phone}}</p>
+                            <p><span class="label">Emergency Contact:  </span>{{student.emergency_first}} {{student.emergency_last}}</p>
+                            <p><span class="label">Emergency Contact Phone:  </span>{{student.emergency_phone}}</p>
+                            <p><span class="label">Emergency Contact Email:  </span>{{student.emergency_email}}</p>
+                            <p><span class="label">Notes:  </span>{{student.contact_sheet_notes|default_if_none:""}}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+            <h3>No students enrolled.</h3>
+            {% endif %}
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

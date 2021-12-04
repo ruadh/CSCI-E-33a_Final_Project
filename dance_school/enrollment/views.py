@@ -196,6 +196,30 @@ def view_profile(request, id):
             'message': 'You may not view other users\' profiles'
         })
 
+@login_required
+def contact_sheet(request, id):
+    # TO DO:  clarify that id is the offering id in the docstring
+    # Only available for non-admin users
+    if request.user.is_staff:
+        try:
+            offering = Offering.objects.get(id=id)
+        except Offering.DoesNotExist:
+            offering = None
+            students = None
+        try:
+            students = User.objects.filter(orders__line_items__offering=offering)
+        except User.DoesNotExist:
+            students = None
+        return render(request, 'enrollment/contact-sheet.html', {
+            'offering': offering,
+            'students': students
+        })
+    else:
+        # TO DO:  Error handling
+        return render(request, 'enrollment/contact-sheet.html', {
+            'offerings': None,
+            'message': 'You are not authorized to view this page'
+        })
 
 # UTILITY
 
@@ -207,6 +231,14 @@ def latest_semester():
     except Semester.DoesNotExist:
         return None
     return semester
+
+def current_offerings(request):
+    semester = latest_semester()
+    try:
+        offerings = Offering.objects.filter(semester=semester)
+    except Offering.DoesNotExist:
+        return None
+    return offerings
 
 
 def paginate_offerings(request, offerings):
@@ -250,7 +282,6 @@ def get_cart(request, user, add=False):
 # Validate a line item before adding to cart or checking out
 # TO DO:  FINISH COMMENTS
 # Action = 'add' or 'checkout'
-
 
 def validate_item(offering, user, action):
     # Make sure we're in the registration window (also enforced by UI)

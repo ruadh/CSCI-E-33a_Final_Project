@@ -15,15 +15,36 @@
 </div>
 {% endif %}
 
+<h2>Join the Class
+    {% if semester %}
+        - {{semester}}
+    {% endif %}
+</h2>
+
 <div class="row">
 
-    <div class="col-md">
-        <h2>Join the Class
-            {% if semester %}
-                - {{semester}}
+    <div id="cart-container" class="col-md order-md-2 card">
+        <h2 class="card-header">Shopping Cart</h2>
+        {% if cart %}
+            <ul id="cart-items">
+            {% for item in cart.items %}
+                <li data-offering={{item.offering.id}}>{{item.offering.stored_title}} {{item.offering.weekday_name}} ${{item.price}} <button class="remove-button" data-item={{item.id}}>Remove</button></li>
+            {% endfor %}
+            </ul>
+            {% if cart.items %}
+                <p><span class="label">Subtotal:</span>  ${{cart.subtotal|default_if_none:"0.00"}}</p>
+                <p><span class="label">Discounts: </span> ${{cart.discount|default_if_none:"0.00"}}</p>
+                <p><span class="label">Total:</span>  ${{cart.total|default_if_none:"0.00"}}</p>
+            {% else %}
+                <h4>No items in your cart.</h4>
             {% endif %}
-        </h2>
+        {% else %}
+            <h4>No items in your cart.</h4>
+        {% endif %}
+    </div>
 
+    <div id="offerings-container" class="col-md card">
+        <h2 class="card-header">Offerings</h2>
         {% if page %}
         <div class="accordion" id="accordionExample">
             {% for offering in page %}
@@ -68,26 +89,6 @@
 
         {% else %}
         <div>{{NO_OFFERINGS}}</div>
-        {% endif %}
-    </div>
-
-    <div id="cart-container" class="col-md">
-        <h2>Shopping Cart</h2>
-        {% if cart %}
-            <ul id="cart-items">
-            {% for item in cart.items %}
-                <li data-offering={{item.offering.id}}>{{item.offering.stored_title}} {{item.offering.weekday_name}} ${{item.price}} <button class="remove-button" data-item={{item.id}}>Remove</button></li>
-            {% endfor %}
-            </ul>
-            {% if cart.items %}
-                <p>Subtotal:  ${{cart.subtotal|default_if_none:"0.00"}}</p>
-                <p>Discounts:  ${{cart.discount|default_if_none:"0.00"}}</p>
-                <p>Total:  ${{cart.total|default_if_none:"0.00"}}</p>
-            {% else %}
-                <h4>No items in your cart.</h4>
-            {% endif %}
-        {% else %}
-            <h4>No items in your cart.</h4>
         {% endif %}
     </div>
 

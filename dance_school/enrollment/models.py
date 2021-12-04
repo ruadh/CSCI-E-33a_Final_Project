@@ -25,6 +25,7 @@ class User(AbstractUser):
     emergency_email = models.EmailField(max_length=254, null=True, blank=True)
     emergency_phone = models.CharField(max_length=32, null=True, blank=True)
     accept_terms = models.DateTimeField(null=True, blank=True)
+    contact_sheet_notes = models.CharField(max_length=2048, null=True, blank=True)
 
     def __str__(self):
         return f'{self.first_name} {self.last_name} ({self.username})'
