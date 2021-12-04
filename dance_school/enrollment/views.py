@@ -171,11 +171,10 @@ def view_profile(request, id):
         # CITATION:  Passing nested context items:  https://stackoverflow.com/q/6540032
 
         # Pass the students' completed enrollments, grouped by semester
-        # Find all semesters in which the student has completed enrollments
-        # TO DO:  Fix this - joeuser is getting incompletes and unathecat is getting multiples
-        #         maybe look at aggregate/annotate instead?
+        # Find all semesters in which the student has completed orders
         semesters = Semester.objects.filter(
-            offerings__line_items__order__student=id).order_by('-start_date')
+            offerings__line_items__order__student=id, offerings__line_items__order__completed__isnull=False).order_by('-start_date').distinct()
+        # Add a list of enrollments for each semester
         for semester in semesters:
             semester.enrollments = LineItem.objects.filter(order__student=id).filter(
                 offering__semester=semester).exclude(order__completed=None)
@@ -196,6 +195,7 @@ def view_profile(request, id):
             'message': 'You may not view other users\' profiles'
         })
 
+
 @login_required
 def contact_sheet(request, id):
     # TO DO:  clarify that id is the offering id in the docstring
@@ -207,7 +207,8 @@ def contact_sheet(request, id):
             offering = None
             students = None
         try:
-            students = User.objects.filter(orders__line_items__offering=offering)
+            students = User.objects.filter(
+                orders__line_items__offering=offering)
         except User.DoesNotExist:
             students = None
         return render(request, 'enrollment/contact-sheet.html', {
@@ -225,12 +226,15 @@ def contact_sheet(request, id):
 
 # Returns the latest semester that is not in hidden mode
 # NOTE:  This WILL return the semester after registration is closed.  That's intentional.
+
+
 def latest_semester():
     try:
         semester = Semester.objects.filter(hide=False).latest('start_date')
     except Semester.DoesNotExist:
         return None
     return semester
+
 
 def current_offerings(request):
     semester = latest_semester()
@@ -270,8 +274,8 @@ def get_cart(request, user, add=False):
     try:
         cart = Order.objects.get(student=request.user, completed=None)
     except Order.DoesNotExist:
-        #If the user doesn't already have an open cart, create one
-        if add==True:
+        # If the user doesn't already have an open cart, create one
+        if add == True:
             cart = Order(student=request.user)
             cart.save()
         else:

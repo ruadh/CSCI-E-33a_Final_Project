@@ -16,15 +16,9 @@ form input[type="submit"] {
 
 #cart-container,
 #offerings-container {
-    padding: 0;
+    padding-left: 0;
+    padding-right: 0;
 }
-
-/* Re-add the padding that the child elements would have inherited from the parent */
-#cart-container *,
-#offerings-container *:not(.card) {
-    padding-left: 20px;
-}
-
 
 /* RESPONSIVE - Styles for larger screens  */
 
