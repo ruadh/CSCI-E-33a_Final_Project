@@ -42,7 +42,7 @@ function addToCart(id) {
     .then(lineItem => {
 
       if (lineItem.error == undefined) {
-        // TO DO:  Update cart view  (for now just refreshing)
+        // TO DO:  Update cart view  (for now just refreshing - don't forget to update totals)
         location.reload();
       } else {
         // TO DO:  Add error handling via messages?
@@ -60,21 +60,28 @@ function addToCart(id) {
  */
 
  function removeFromCart(id) {
-  alert(`remove ${id}`);
 
    // Disable the button the user just clicked on, so they can't click repeatedly while waiting
    const removeButton = document.querySelector(`.remove-button[data-item="${id}"]`);
    removeButton.disabled = true;
 
-  // TO DO:  CSRF
-  // Gather the CSRF token from the Django template
-  // CITATION:  Copied directly from Vlad's section slides
-  // const token = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+  // Add the offering to the cart via the API
+  fetch(`/add-to-cart/${id}`, {
+    method: 'DELETE'
+  })
+    .then(response => response.json())
+    .then(lineItem => {
 
-  // TO DO:  Actually do the removal
-  // TO DO:  Remember to limit to the active user or an admin
+      if (lineItem.error == undefined) {
+        // TO DO:  Update cart view  (for now just refreshing - don't forget to update totals)
+        location.reload();
+      } else {
+        // TO DO:  Add error handling via messages?
+        alert(lineItem.error);
+      }
 
-  // Reenable the remove button
-  removeButton.disabled = false;
+      // Reenable the add button
+      removeButton.disabled = false;
+    });
 
  }

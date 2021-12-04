@@ -174,7 +174,6 @@ def view_profile(request, id):
         # Find all semesters in which the student has completed orders
         semesters = Semester.objects.filter(
             offerings__line_items__order__student=id, offerings__line_items__order__completed__isnull=False).order_by('-start_date').distinct()
-        # Add a list of enrollments for each semester
         for semester in semesters:
             semester.enrollments = LineItem.objects.filter(order__student=id).filter(
                 offering__semester=semester).exclude(order__completed=None)
@@ -216,7 +215,6 @@ def contact_sheet(request, id):
             'students': students
         })
     else:
-        # TO DO:  Error handling
         return render(request, 'enrollment/contact-sheet.html', {
             'offerings': None,
             'message': 'You are not authorized to view this page'
@@ -309,10 +307,11 @@ def validate_item(offering, user, action):
 
 # API
 
-# Add a line item to a cart
+# Add or remove a line item in the cart
 @login_required
+# TO DO:  Add CSRF handling
 @csrf_exempt
-def add_to_cart(request, id):
+def update_cart(request, id):
     if request.method == 'POST':
         try:
             offering = Offering.objects.get(pk=id)
@@ -337,5 +336,17 @@ def add_to_cart(request, id):
         line_item.save()
 
         return JsonResponse(line_item.serialize(), status=200)
+    elif request.method == 'DELETE':
+        try: 
+            line_item = LineItem.objects.get(id=id)
+        except LineItem.DoesNotExist:
+            return JsonResponse({'error': f'Line Item {id} not found'}, status=400)
+
+        # Restrict deletion to the line item's owner or an admin user
+        if line_item.order.student.id == request.user.id or request.user.is_staff:
+            line_item.delete()
+            return JsonResponse({}, status=200)
+        else:
+            return JsonResponse({'error': 'DEV NOTE: NOT AUTHORIZED'}, status=401)
     else:
         return JsonResponse({'error': 'POST request required'}, status=400)
