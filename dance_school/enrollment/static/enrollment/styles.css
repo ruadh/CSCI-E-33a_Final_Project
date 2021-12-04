@@ -28,12 +28,11 @@ form input[type="submit"] {
 
 /* RESPONSIVE - Styles for larger screens  */
 
-@media(min-width: 720px) {
+/* @media(min-width: 720px) {
 
-    /* Turn off the shopping cart's card styling when it's in the sidebar position */
     #cart-container,
     #offerings-container {
         border: none;
     }
 
-}
+} */
