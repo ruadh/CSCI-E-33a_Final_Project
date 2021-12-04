@@ -7,14 +7,14 @@ from django.db.models import Sum, Count
 from django.core.exceptions import ValidationError
 
 
+# Timezones list approach from:  https://stackoverflow.com/a/45867250
+TIMEZONES = tuple(zip(pytz.all_timezones, pytz.all_timezones))
+
 # Create your models here.
 
 
 class User(AbstractUser):
-    # Timezones list approach from:  https://stackoverflow.com/a/45867250
-    # TO DO:  see if the "timezones" bit is still needed
-    timezones = tuple(zip(pytz.all_timezones, pytz.all_timezones))
-    timezone = models.CharField(max_length=32, choices=timezones,
+    timezone = models.CharField(max_length=32, choices=TIMEZONES,
                                 default=settings.DEFAULT_TIMEZONE)
     first_name = models.CharField(max_length=128, null=True, blank=True)
     last_name = models.CharField(max_length=128, null=True, blank=True)
@@ -87,14 +87,14 @@ class Offering(models.Model):
         Semester, on_delete=PROTECT, null=False, blank=False, related_name='offerings')
     location = models.ForeignKey(
         Location, on_delete=PROTECT, null=False, blank=False, related_name='offerings')
-    stored_title = models.CharField(max_length=64, null=True, blank=True)
-    stored_subtitle = models.CharField(max_length=256, null=True, blank=True)
     price = models.DecimalField(
         max_digits=7, decimal_places=2, null=False, blank=False)
     weekday = models.IntegerField(
         choices=settings.WEEKDAYS, null=False, blank=False)
     start_time = models.TimeField(null=False, blank=False)
     end_time = models.TimeField(null=False, blank=False)
+    timezone = models.CharField(max_length=32, choices=TIMEZONES,
+                                default=settings.DEFAULT_TIMEZONE)
     start_date = models.DateField(null=False, blank=False)
     end_date = models.DateField(null=False, blank=False)
     backup_date = models.DateField(null=False, blank=False)
@@ -174,13 +174,13 @@ class LineItem(models.Model):
         max_digits=6, decimal_places=2, null=False, blank=False)
 
     def __str__(self):
-        return f'{self.offering.stored_title} {self.offering.weekday_name} {self.offering.semester.name}'
+        return f'{self.offering.course.title} {self.offering.weekday_name} {self.offering.semester.name}'
 
     # CITATION:     Adapted from provided models.py in Project 3
     def serialize(self):
         return {
             'id': self.id,
-            'offering_display': f'{self.offering.stored_title} {self.offering.weekday_name}',
+            'offering_display': f'{self.offering.course.title} {self.offering.weekday_name}',
             'price': self.offering.price
         }
 

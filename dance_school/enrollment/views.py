@@ -297,11 +297,11 @@ def validate_item(offering, user, action):
     # See if the user is already registered for this offering
     reg = LineItem.objects.filter(order__student=user, offering=offering)
     if reg.exclude(order__completed=None).aggregate(Count('id'))['id__count']:
-        return JsonResponse({'error': f'You are already registered for {offering.stored_title}.'}, status=400)
+        return JsonResponse({'error': f'You are already registered for {offering.course.title}.'}, status=400)
     if action == 'add':
         # See if this offering is already in the user's cart
         if reg.aggregate(Count('id'))['id__count'] > 0:
-            return JsonResponse({'error': f'{offering.stored_title} is already in your cart.'}, status=400)
+            return JsonResponse({'error': f'{offering.course.title} is already in your cart.'}, status=400)
     return True
 
 

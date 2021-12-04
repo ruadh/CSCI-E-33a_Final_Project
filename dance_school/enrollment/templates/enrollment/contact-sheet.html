@@ -12,7 +12,7 @@
     <div class="col-md">
 
         {% if offering %}
-            <h2>{{offering.stored_title}} {{offering.weekday_name}}s at {{offering.start_time}}, {{offering.semester}}</h2>
+            <h2>{{offering.course.title}} {{offering.weekday_name}}s at {{offering.start_time}}, {{offering.semester}}</h2>
             {% if students %}
                 {% for student in students %}
                     <div class="card">

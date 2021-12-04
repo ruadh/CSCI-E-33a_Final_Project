@@ -59,7 +59,7 @@
                         <h3 class="card-title">{{semester.name}}</h3>
                         <ul>
                             {% for enrollment in semester.enrollments %}
-                                <li>{{enrollment.offering.stored_title}} - {{enrollment.offering.weekday_name}} </li>
+                                <li>{{enrollment.offering.course.title}} - {{enrollment.offering.weekday_name}} </li>
                             {% endfor %}
                         </ul>
                     </div>
@@ -77,7 +77,7 @@
                     <h4>{{order.items.0.offering.semester}}:</h4>
                     {% for item in order.items %}
                         <ul>
-                            <li>{{item.offering.stored_title}} {{item.offering.weekday_name}} ${{item.price}}
+                            <li>{{item.offering.course.title}} {{item.offering.weekday_name}} ${{item.price}}
                                 {% if item.planned_absences %}
                                     (Planned Absences:  {{item.planned_absences}})
                                 {% endif %}
@@ -87,7 +87,7 @@
                     <p><span class="label">Subtotal:</span> ${{order.subtotal}}</p>
                     <p><span class="label">Discounts:</span> -${{order.discount|default_if_none:"0.00"}}</p>
                     <p><span class="label">Total:</span> ${{order.total}}</p>
-                    <p><span class="label">Completed:</span> {{order.completed}}</p>
+                    <p><span class="label">Completed:</span> {{order.completed|date:"n/j/Y g:i a"}}</p>
                 </div>
             </div>
         {% endfor %}
