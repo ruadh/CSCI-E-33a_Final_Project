@@ -18,6 +18,7 @@ from django.utils import timezone
 # from django import forms
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Count
+from markdown2 import Markdown
 
 from .models import Offering, Order, User, Semester, Location, Course, LineItem
 
@@ -297,7 +298,7 @@ def validate_item(offering, user, action):
     # See if the user is already registered for this offering
     reg = LineItem.objects.filter(order__student=user, offering=offering)
     if reg.exclude(order__completed=None).aggregate(Count('id'))['id__count']:
-        return JsonResponse({'error': f'You are already registered for {offering.course.title}.'}, status=400)
+        return JsonResponse({'error': f'You are already registered for {offering.course.title} in {offering.semester}.'}, status=400)
     if action == 'add':
         # See if this offering is already in the user's cart
         if reg.aggregate(Count('id'))['id__count'] > 0:

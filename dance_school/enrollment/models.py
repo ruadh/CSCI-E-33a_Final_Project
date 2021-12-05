@@ -1,10 +1,13 @@
 from django.db.models.deletion import PROTECT
 import pytz
+# from datetime import datetime
+from django.utils import timezone
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models import Sum, Count
 from django.core.exceptions import ValidationError
+from markdown2 import Markdown
 
 
 # Timezones list approach from:  https://stackoverflow.com/a/45867250
@@ -65,6 +68,16 @@ class Semester(models.Model):
                 raise ValidationError(
                     'Registration open must be earlier than registration close')
 
+    @property
+    def registration_status(self):
+        now = timezone.now()
+        if self.registration_close < now:
+            return 'closed'
+        elif self.registration_open > now:
+            return 'future'
+        else:
+            return 'open'
+
     def __str__(self):
         return self.name
 
@@ -72,9 +85,13 @@ class Semester(models.Model):
 class Course(models.Model):
     title = models.CharField(max_length=64, null=False, blank=False)
     subtitle = models.CharField(max_length=256, null=False, blank=False)
-    description = models.TextField(max_length=4096, null=False, blank=False)
+    description = models.TextField(max_length=4096, null=False, blank=False, help_text=settings.MARKDOWN_HELP_TEXT)
     requirements = models.CharField(max_length=256, null=False, blank=False)
     qualifications = models.CharField(max_length=1024, null=False, blank=False)
+
+    @property
+    def description_html(self):
+        return Markdown().convert(self.description)
 
     def __str__(self):
         return self.title

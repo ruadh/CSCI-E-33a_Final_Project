@@ -23,7 +23,7 @@
 
 <div class="row">
 
-    <div id="cart-container" class="col-md order-md-2 card">
+    <div id="cart-container" class="col-md order-md-5 card">
         <h2 class="card-header section-header">Shopping Cart</h2>
         <div>
             {% if cart %}
@@ -45,7 +45,7 @@
         </div>
     </div>
 
-    <div id="offerings-container" class="col-md card">
+    <div id="offerings-container" class="col-md-7 card">
         <h2 class="card-header section-header">Offerings</h2>
         {% if page %}
         <div class="accordion" id="accordionExample">
@@ -55,7 +55,8 @@
                     <h5 class="mb-0">
                         <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse{{offering.id}}"
                             aria-expanded="true" aria-controls="collapse{{offering.id}}">
-                            {{offering.course}}: {{offering.weekday_name}}s
+                            {# CITATION: https://simpleisbetterthancomplex.com/references/2016/06/21/date-filter.html #}
+                            {{offering.course}}: {{offering.weekday_name}}s at {{offering.start_time|date:"g:i a"}} 
                         </button>
                     </h5>
                 </div>
@@ -63,11 +64,25 @@
                 <div id="collapse{{offering.id}}" class="collapse" aria-labelledby="heading{{offering.id}}"
                     data-parent="#accordionExample">
                     <div class="card-body">
-                        {# CITATION: https://simpleisbetterthancomplex.com/references/2016/06/21/date-filter.html #}
-                        {{offering.start_time|date:"g:i a"}} - {{offering.end_time|date:"g:i a"}} at {{offering.location}}
-                        Details go here. {{offering.spots_left}} of {{offering.capacity}} spots remaining.
+                        <h4>{{offering.course.title}}</h4>
+                        <h5>{{offering.course.subtitle}}</h5>
+                        <p><span class="label">When:</span> {{offering.weekday_name}}s {{offering.start_time|date:"g:i a"}} - {{offering.end_time|date:"g:i a"}} at {{offering.location}}</p>
+                        <p><span class="label">Where:</span> <a href="{{offering.location.web_site}}">{{offering.location}}</a>, {{offering.location.address_1}}, {{offering.location.city}}, {{offering.location.state}} (<a href="{{offering.location.parking}}">parking info</a>)</p>
+                        {{offering.course.description_html|safe }}
+                        <p><span class="label">Level:</span> {{offering.course.qualifications}}</p>
+                        <h5>Register Now</h5>
+                        <p><span class="label">Price:  </span>${{offering.price}}</p>
+                        {% if offering.semester.registration_status == 'future' %}
+                            <p>Registration for this class will open on {{offering.semester.registration_open|date:"F jS \a\t P"}}</p>
+                        {% elif offering.spots_left == 0 %}
+                            <p>This class is sold out.</p>
+                        {% elif offering.semester.registration_status == 'closed' %}
+                            <p>Registration for this semester has closed.</p>
+                        {% else %}
+                            <p>{{offering.spots_left}} of {{offering.capacity}} spots remaining.</p>
+                            <button class="btn btn-primary add-button" data-offering={{offering.id}}>Add to Cart</button>
+                        {% endif %}
                     </div>
-                    <button class="btn btn-primary add-button" data-offering={{offering.id}}>Add to Cart</button>
                 </div>
             </div>
             {% endfor %}
