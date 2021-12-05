@@ -145,8 +145,14 @@ PAGE_SIZE = 5
 # ENTER YOUR SCHOOL'S CUSTOMIZATIONS HERE:
 # NOTE:  These must also be added to context_processors.py to be used by Django templates and/or JavaScript
 
-# System's default display timezone - can be overriden by user preference
+# System's default display timezone 
 DEFAULT_TIMEZONE = 'America/New_York'
+
+# Date and time format
+DATE_TIME_FORMAT = 'F jS \\a\\t P'
+
+# Date and time format with timezone 
+DATE_TIME_TIMEZONE_FORMAT = 'F jS \\a\\t P T'
 
 # The name of your school
 SCHOOL_NAME = 'Belly Dance Somerville'

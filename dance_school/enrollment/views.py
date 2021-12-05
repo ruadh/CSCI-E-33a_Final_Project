@@ -145,8 +145,8 @@ def index(request, page=None, message=None):
     else:
         cart = None
 
-    # Get the name of the latest semester for display
-    semester = latest_semester().name
+    # Pass the latest semester to the template
+    semester = latest_semester()
 
     return render(request, 'enrollment/index.html', {
         'page': page,

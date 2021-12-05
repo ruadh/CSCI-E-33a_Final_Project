@@ -10,6 +10,7 @@ from django.conf import settings
 from .models import User, Semester, Course, Offering, Location, LineItem, Order
 
 # timezone.activate(pytz.timezone(settings.DEFAULT_TIMEZONE))
+timezone.activate("US/Eastern")
 
 # Inlines - For adding related table data to a model's detail views
 class LineItemStackedInline(admin.StackedInline):

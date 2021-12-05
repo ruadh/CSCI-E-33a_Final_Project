@@ -30,6 +30,11 @@ class User(AbstractUser):
     accept_terms = models.DateTimeField(null=True, blank=True)
     contact_sheet_notes = models.CharField(max_length=2048, null=True, blank=True)
 
+    # TEMP FOR TESTING
+    @property
+    def current_time(self):
+        return timezone.now()
+
     def __str__(self):
         return f'{self.first_name} {self.last_name} ({self.username})'
 

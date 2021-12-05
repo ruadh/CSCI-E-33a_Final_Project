@@ -15,11 +15,12 @@
 </div>
 {% endif %}
 
-<h2>Join the Class
-    {% if semester %}
-        - {{semester}}
-    {% endif %}
-</h2>
+<h2>Join the Class</h2>
+{% if semester.registration_status == 'closed' %}
+    <p>{{semester}} registration closed on {{semester.registration_close}} </p>
+{% else %}
+    <p>{{semester}} registration is open from {{semester.registration_open|date:DATE_TIME_FORMAT}} to {{semester.registration_close|date:DATE_TIME_TIMEZONE_FORMAT}}, or until classes sell out. </p>
+{% endif %}
 
 <div class="row">
 
@@ -73,7 +74,7 @@
                         <h5>Register Now</h5>
                         <p><span class="label">Price:  </span>${{offering.price}}</p>
                         {% if offering.semester.registration_status == 'future' %}
-                            <p>Registration for this class will open on {{offering.semester.registration_open|date:"F jS \a\t P"}}</p>
+                            <p>Registration for this class will open on {{offering.semester.registration_open|date:DATE_TIME_FORMAT}}</p>
                         {% elif offering.spots_left == 0 %}
                             <p>This class is sold out.</p>
                         {% elif offering.semester.registration_status == 'closed' %}
