@@ -287,23 +287,24 @@ def get_cart(request, user, add=False):
 # Action = 'add' or 'checkout'
 
 def validate_item(offering, user, action):
-    # Make sure we're in the registration window (also enforced by UI)
-    if offering.semester.registration_open > datetime.now(timezone.utc):
-        return JsonResponse({'error': f'Registration for {offering.semester} is not yet open.'}, status=400)
-    if offering.semester.registration_close < datetime.now(timezone.utc):
-        return JsonResponse({'error': f'Registration is already closed for {offering.semester}.'}, status=400)
-    # Make sure space is still available in the class
-    if offering.spots_left < 1:
-        return JsonResponse({'error': 'Sorry, this offering is full.'}, status=400)
     # See if the user is already registered for this offering
     reg = LineItem.objects.filter(order__student=user, offering=offering)
     if reg.exclude(order__completed=None).aggregate(Count('id'))['id__count']:
-        return JsonResponse({'error': f'You are already registered for {offering.course.title} in {offering.semester}.'}, status=400)
-    if action == 'add':
-        # See if this offering is already in the user's cart
-        if reg.aggregate(Count('id'))['id__count'] > 0:
-            return JsonResponse({'error': f'{offering.course.title} is already in your cart.'}, status=400)
-    return True
+        error = f'You are already registered for {offering.course.title} in {offering.semester}.'
+    # See if this offering is already in the user's cart
+    elif action == 'add' and reg.aggregate(Count('id'))['id__count'] > 0:
+        error = f'{offering.course.title} is already in your cart.'
+    # Make sure we're in the registration period (also enforced by UI)
+    elif offering.semester.registration_open > datetime.now(timezone.utc):
+        error = f'Registration for {offering.semester} is not yet open.'
+    elif offering.semester.registration_close < datetime.now(timezone.utc):
+        error = f'Registration is already closed for {offering.semester}.'
+    # Make sure space is still available in the class
+    elif offering.spots_left < 1:
+        error = f'This offering is full.'
+    else:
+        return None
+    return error
 
 
 # API
@@ -320,9 +321,11 @@ def update_cart(request, id):
             return JsonResponse({'error': 'Offering not found'}, status=400)
 
         # Validate
-        eligible = validate_item(offering, request.user, 'add')
-        if eligible != True:
-            return eligible
+        validation = validate_item(offering, request.user, 'add')
+        # TO DO:  FIX ME HERE
+        if validation != None:
+            # return validation
+            return JsonResponse({'error': validation}, status=400)
 
         # If the user doesn't already have an open order, create a new one
         cart = get_cart(request, request.user, True)
@@ -348,6 +351,53 @@ def update_cart(request, id):
             line_item.delete()
             return JsonResponse({}, status=200)
         else:
-            return JsonResponse({'error': 'DEV NOTE: NOT AUTHORIZED'}, status=401)
+            return JsonResponse({'error': 'You may not delete line items belonging to another user.'}, status=401)
+    else:
+        return JsonResponse({'error': 'POST request required'}, status=400)
+
+
+# Check out a cart
+@login_required
+# TO DO:  ADD CSRF HANDLING
+@csrf_exempt
+def checkout(request, id):
+    if request.method == 'POST':
+        try:
+            cart = Order.objects.get(pk=id)
+        except Order.DoesNotExist:
+            return JsonResponse({'error': f'Order {id} not found'}, status=400)
+
+        # Restrict checkout to the cart's owner
+        if cart.student != request.user:
+            return JsonResponse({'error': 'You are not authorized to check out carts belonging to another user.'}, status=401)
+
+        # Validate the shopping cart
+        try:
+            line_items = LineItem.objects.filter(order=id)
+        except LineItem.DoesNotExist:
+            return JsonResponse({'error': f'Cart {cart.id} is empty.'}, status=400)
+        
+        # Validate each line item again, removing any invalid items from the cart
+        removed_list = []
+        for line_item in line_items:
+            error = validate_item(line_item.offering, cart.student, 'checkout')
+            if error != None:
+                # Track a list of items and errors for the message
+                removed_list.append(f'{line_item.offering.course.title}: {error}')
+                # Also remove it from the cart
+                line_item.delete()
+
+        if len(removed_list) > 0:
+            removed_list_delimited = '\n'.join(removed_list)
+            # TO DO:  Pluralize me
+            return JsonResponse({'error': f'{len(removed_list)} items removed from cart: \n{removed_list_delimited}'}, status=400)
+
+        # If no items remain in the cart
+        # TO DO: check the payment
+        # TO DO: mark the order as completed
+
+        # TEMP FOR TESTING
+        return JsonResponse({'error': f'{len(line_items)} items left in cart'}, status=400)
+
     else:
         return JsonResponse({'error': 'POST request required'}, status=400)

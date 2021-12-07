@@ -9,8 +9,9 @@ from django.urls import reverse
 from django.conf import settings
 from .models import User, Semester, Course, Offering, Location, LineItem, Order
 
+# TO DO:  Figure out local time zones...
 # timezone.activate(pytz.timezone(settings.DEFAULT_TIMEZONE))
-timezone.activate("US/Eastern")
+# timezone.activate('America/New_York')
 
 # Inlines - For adding related table data to a model's detail views
 class LineItemStackedInline(admin.StackedInline):

@@ -14,6 +14,11 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.remove-button').forEach(button => {
       button.addEventListener('click', () => removeFromCart(button.dataset.item));
     });
+
+    // Add listeners to the Checkout button  (there should only be 1, but forEach handles missing buttons gracefully)
+    document.querySelectorAll('#checkout-button').forEach(button => {
+      button.addEventListener('click', () => checkout(button.dataset.order));
+    });
 });
 
 /**
@@ -84,4 +89,36 @@ function addToCart(id) {
       removeButton.disabled = false;
     });
 
+ }
+
+
+
+/**
+ * Remove a line item from the cart
+ */
+
+ function checkout(id) {
+   alert(id);
+
+    // Disable the button the user just clicked on, so they can't click repeatedly while waiting
+    const checkoutButton = document.querySelector('#checkout-button');
+    checkoutButton.disabled = true;
+
+  // Submit the cart via the API
+  fetch(`/checkout/${id}`, {
+    method: 'POST'
+  })
+    .then(response => response.json())
+    .then(order => {
+
+      // TO DO:  What happens after we get a response back?
+      if (order.error == undefined) {
+        alert('success...?');
+      } else {
+        alert(order.error);
+      }
+
+      // Reenable the add button
+      checkoutButton.disabled = false;
+    });
  }
