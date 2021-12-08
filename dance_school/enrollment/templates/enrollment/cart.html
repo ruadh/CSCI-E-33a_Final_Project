@@ -15,21 +15,21 @@
 </div>
 {% endif %}
 
-<h2>Checkout</h2>
-{% if semester.registration_status == 'closed' %}
-    <p>{{semester}} registration closed on {{semester.registration_close}} </p>
-{% else %}
-    <p>{{semester}} registration is open from {{semester.registration_open|date:DATE_TIME_FORMAT}} to {{semester.registration_close|date:DATE_TIME_TIMEZONE_FORMAT}}, or until classes sell out. </p>
-{% endif %}
-
 <div class="row">
 
     <div id="cart-container" class="col-md order-md-5 card">
-        <h2 class="card-header section-header">Shopping Cart</h2>
         <div>
             {% if cart %}
                 {% if cart.completed %}
+                    <h2 class="card-header section-header">Order {{cart.id}}</h2>
                     <p><span class="label">Completed:</span>  {{cart.completed}}</p>
+                {% else %}
+                    <h2 class="card-header section-header">Checkout</h2>
+                    {% if semester.registration_status == 'closed' %}
+                        <p>{{semester}} registration closed on {{semester.registration_close}} </p>
+                    {% else %}
+                        <p>{{semester}} registration is open from {{semester.registration_open|date:DATE_TIME_FORMAT}} to {{semester.registration_close|date:DATE_TIME_TIMEZONE_FORMAT}}, or until classes sell out. </p>
+                    {% endif %}
                 {% endif %}
                 <ul id="cart-items">
                 {% for item in cart.items %}
@@ -46,7 +46,7 @@
                     <p><span class="label">Total:</span>  ${{cart.total|default_if_none:"0.00"}}</p>
                     {% if cart.total > 0 and not cart.completed %}
                         <h4>Payment Information</h4>
-                        <form action="{% url 'checkout' cart.id %}" method="POST" class="">
+                        <form action="{% url 'order' cart.id %}" method="POST" class="">
                             {% csrf_token %}
                             {{ payment_form }}
                             <input type="submit" class="btn btn-primary link-as-button">
@@ -55,8 +55,7 @@
                 {% else %}
                     <h4>No items in your cart.</h4>
                 {% endif %}
-            {% else %}
-                <h4>No items in your cart.</h4>
+
             {% endif %}
             <!-- <button id="checkout-button" data-order="{{cart.id}}">Checkout</button> -->
         </div>

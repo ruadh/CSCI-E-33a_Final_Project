@@ -37,7 +37,7 @@
                     <p><span class="label">Subtotal:</span>  ${{cart.subtotal|default_if_none:"0.00"}}</p>
                     <p><span class="label">Discounts: </span> ${{cart.discount|default_if_none:"0.00"}}</p>
                     <p><span class="label">Total:</span>  ${{cart.total|default_if_none:"0.00"}}</p>
-                    <form action="{% url 'checkout' cart.id %}" method="GET" class="">
+                    <form action="{% url 'order' cart.id %}" method="GET" class="">
                         {% csrf_token %}
                         <input type="submit" class="btn btn-primary link-as-button">
                     </form>
@@ -47,7 +47,6 @@
             {% else %}
                 <h4>No items in your cart.</h4>
             {% endif %}
-            <!-- <button id="checkout-button" data-order="{{cart.id}}">VALIDATE</button> -->
         </div>
     </div>
 
@@ -80,7 +79,7 @@
                         <p><span class="label">Price:  </span>${{offering.price}}</p>
                         {% if offering.semester.registration_status == 'future' %}
                             <p>Registration for this class will open on {{offering.semester.registration_open|date:DATE_TIME_FORMAT}}</p>
-                        {% elif offering.spots_left == 0 %}
+                        {% elif offering.spots_left < 1 %}
                             <p>This class is sold out.</p>
                         {% elif offering.semester.registration_status == 'closed' %}
                             <p>Registration for this semester has closed.</p>
