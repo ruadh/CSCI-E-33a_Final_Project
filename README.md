@@ -34,7 +34,7 @@ I chose to store weekdays as integers instead of as their names, which will supp
 Realistically, most class fees will be in the hundreds of dollars, and order totals only occasionally exceed $1,000.  However, I set the max_digits on those fields to support line item prices in the tens of thousands of dollars, and purchase prices in the hundreds of thousands of dollars.  It's always wise to have a "fudge factor", and other schools may have premium offerings or pricing models that require higher amounts.  This also leaves room for future enhancemnts, like allowing registrations for multiple students in a single order (such as a parent and child taking class together).
 
 #### Orders' required fields
-A new Order object requires only the student's foreign key because other values 
+A new Order object requires only the student's foreign key because an order/cart is empty when first created.
 
 
 #### Line Items 
@@ -45,6 +45,11 @@ The provided starter files used HTML form in registration.html.   I decided to s
 
 This also lets us control which fields are required on the form level vs. the model level.  A likely future enhancement would be to allow users to create accounts with limited information (basic contact info), but require more information at before they check out (terms & conditions, emergency contact info, etc.)   We can't do that if the fields are required at the model level.
 
+#### Gift cards for payment processing
+In my proposal, I said that checkout should:
+> Validate "payment" (using a dummy credit card number - no integration or security)
+
+I had originally planned to have the dummy credit card number be a hard-coded value, but instead, I decided to store it in a new table based on a GiftCard model, since this also lays the groundwork for including gift card support in the app.  I did NOT implement any substantial validation (like numerical characters only for the card number) for this model, since that's out of scope of my proposal.
 
 ### Resisting scope creep
 There are some features that I did not include because they are not needed to meet my spec, but that I'd recommend adding to the requirements if I were building this for a client.
@@ -100,3 +105,9 @@ I added comments in my code with the prefix "CITATION:" for code borrowed from o
 
 ### Semester dates
 Many of my features depend on the semester dates.  I set up some sample semesters with realistic dates, but you may want to change those in Django Admin to see them in action.  (ex:  change the registration open/close dates to see how it prevents students from enrolling outside the registration window.)
+
+### Gift cards
+BLAH explain.  One card is set up with $1000.  Add new cards or adjust balance in Django Admin.
+
+### Class capacity validation
+BLAH add to cart, then update capacity in Django admin, or check out as another user in another browser

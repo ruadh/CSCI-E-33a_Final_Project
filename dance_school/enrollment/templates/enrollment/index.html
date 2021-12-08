@@ -11,7 +11,7 @@
 {# Container for persistent Django-created error messages #}
 {% if message %}
 <div id="main-alert-persistent" class="alert alert-danger">
-    {{message}}
+    {{message|linebreaksbr}}
 </div>
 {% endif %}
 
@@ -37,13 +37,17 @@
                     <p><span class="label">Subtotal:</span>  ${{cart.subtotal|default_if_none:"0.00"}}</p>
                     <p><span class="label">Discounts: </span> ${{cart.discount|default_if_none:"0.00"}}</p>
                     <p><span class="label">Total:</span>  ${{cart.total|default_if_none:"0.00"}}</p>
+                    <form action="{% url 'checkout' cart.id %}" method="GET" class="">
+                        {% csrf_token %}
+                        <input type="submit" class="btn btn-primary link-as-button">
+                    </form>
                 {% else %}
                     <h4>No items in your cart.</h4>
                 {% endif %}
             {% else %}
                 <h4>No items in your cart.</h4>
             {% endif %}
-            <button id="checkout-button" data-order="{{cart.id}}">Checkout</button>
+            <!-- <button id="checkout-button" data-order="{{cart.id}}">VALIDATE</button> -->
         </div>
     </div>
 

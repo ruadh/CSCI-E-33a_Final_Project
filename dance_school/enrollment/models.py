@@ -126,7 +126,6 @@ class Offering(models.Model):
 
     @property
     def weekday_name(self):
-        # TO DO:  Is there a more elegant way of doing this?  Put it in views?  Can I refer to views here?
         return settings.WEEKDAYS[self.weekday][1]
 
     @property
@@ -206,3 +205,12 @@ class LineItem(models.Model):
             'price': self.offering.price
         }
 
+class GiftCard(models.Model):
+    card_number = models.CharField(max_length=16, null=False, blank=False)
+    month = models.CharField(max_length=2, null=False, blank=False)
+    year = models.CharField(max_length=4, null=False, blank=False)
+    pin = models.CharField(max_length=4, null=False, blank=False)
+    amount = models.DecimalField(max_digits=6, decimal_places=2, null=False, blank=False)
+
+    def __str__(self):
+        return f'x{self.card_number[-4:]}'

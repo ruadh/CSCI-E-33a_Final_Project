@@ -40,7 +40,7 @@ function addToCart(id) {
 
 
   // Add the offering to the cart via the API
-  fetch(`/add-to-cart/${id}`, {
+  fetch(`/cart/${id}`, {
     method: 'POST'
   })
     .then(response => response.json())
@@ -71,7 +71,7 @@ function addToCart(id) {
    removeButton.disabled = true;
 
   // Add the offering to the cart via the API
-  fetch(`/add-to-cart/${id}`, {
+  fetch(`/cart/${id}`, {
     method: 'DELETE'
   })
     .then(response => response.json())

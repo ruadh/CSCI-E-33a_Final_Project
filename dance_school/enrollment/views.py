@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from datetime import datetime
 from django.http.response import HttpResponse
 import pytz
+from django import forms
 # from django.db import models
 from django.conf import settings
 # from django.contrib import messages
@@ -20,11 +21,20 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Count
 from markdown2 import Markdown
 
-from .models import Offering, Order, User, Semester, Location, Course, LineItem
+from .models import GiftCard, Offering, Order, User, Semester, Location, Course, LineItem
+
+
+# FORM CLASSES
+
+class GiftCardForm(forms.Form):
+    card_number = forms.CharField(required=True, strip=True)
+    month = forms.CharField(required=True, strip=True)
+    year = forms.CharField(required=True, strip=True)
+    pin = forms.CharField(required=True, strip=True, label='PIN')
+    total = forms.DecimalField(max_digits=6, decimal_places=2, required=True, widget=forms.HiddenInput)
 
 # AUTHENTICATION
 # CITATION:  Adapted from provided starter files in earlier projects
-
 
 def login_view(request):
 
@@ -307,6 +317,7 @@ def validate_item(offering, user, action):
     return error
 
 
+
 # API
 
 # Add or remove a line item in the cart
@@ -356,48 +367,116 @@ def update_cart(request, id):
         return JsonResponse({'error': 'POST request required'}, status=400)
 
 
-# Check out a cart
+# Validate the cart and remove any invalid items
 @login_required
 # TO DO:  ADD CSRF HANDLING
 @csrf_exempt
-def checkout(request, id):
+def checkout_validate(request, id):
+    try:
+        cart = Order.objects.get(pk=id)
+    except Order.DoesNotExist:
+        return f'Order {id} not found'
+
+    # Restrict checkout to the cart's owner
+    if cart.student != request.user:
+        return 'You are not authorized to check out carts belonging to another user.'
+
+    # Make sure we're not trying to check out an order that has already been completed (ex: via URL)
+    if cart.completed != None:
+        return 'This cart has already been checked out.'
+
+    # Make sure the cart is not empty
+    try:
+        line_items = LineItem.objects.filter(order=id)
+    except LineItem.DoesNotExist:
+        return f'Cart {cart.id} is empty.'
+    
+    # Validate each line item again, removing any invalid items from the cart
+    removed_list = []
+    for line_item in line_items:
+        error = validate_item(line_item.offering, cart.student, 'checkout')
+        if error != None:
+            # Track a list of items and errors for the message
+            removed_list.append(f'{line_item.offering.course.title}: {error}')
+            # Also remove it from the cart
+            line_item.delete()
+
+    # Return a list of any items that have been removed from the cart
+    removed_ct = len(removed_list)
+    if removed_ct > 0:
+        removed_list_delimited = '\n'.join(removed_list)
+        return f'{removed_ct} item{"" if removed_ct == 1 else "s"} removed from cart: \n{removed_list_delimited}'
+
+    return None
+
+
+# Validate payment
+@login_required
+@csrf_exempt
+def validate_payment(request):
     if request.method == 'POST':
-        try:
-            cart = Order.objects.get(pk=id)
-        except Order.DoesNotExist:
-            return JsonResponse({'error': f'Order {id} not found'}, status=400)
+        form = GiftCardForm(request.POST)
+        if form.is_valid():
+            try: 
+                # TO DO:  Validate the rest of the details
+                card = GiftCard.objects.get(card_number=form.cleaned_data['card_number'], month=form.cleaned_data['month'], year=form.cleaned_data['year'], pin=form.cleaned_data['pin'])
+            except GiftCard.DoesNotExist:
+                return False
 
-        # Restrict checkout to the cart's owner
-        if cart.student != request.user:
-            return JsonResponse({'error': 'You are not authorized to check out carts belonging to another user.'}, status=401)
+            # Check that the gift card balance is enough to cover the cart total
+            total = form.cleaned_data['total']
+            if card.amount < total:
+                return False
+            else:
+                card.amount -= total
+                card.save()
+                return True
 
-        # Validate the shopping cart
-        try:
-            line_items = LineItem.objects.filter(order=id)
-        except LineItem.DoesNotExist:
-            return JsonResponse({'error': f'Cart {cart.id} is empty.'}, status=400)
-        
-        # Validate each line item again, removing any invalid items from the cart
-        removed_list = []
-        for line_item in line_items:
-            error = validate_item(line_item.offering, cart.student, 'checkout')
-            if error != None:
-                # Track a list of items and errors for the message
-                removed_list.append(f'{line_item.offering.course.title}: {error}')
-                # Also remove it from the cart
-                line_item.delete()
 
-        if len(removed_list) > 0:
-            removed_list_delimited = '\n'.join(removed_list)
-            # TO DO:  Pluralize me
-            return JsonResponse({'error': f'{len(removed_list)} items removed from cart: \n{removed_list_delimited}'}, status=400)
+# Preview the cart before checkout
+@login_required
+@csrf_exempt
+def checkout_preview(request, id):
+    
+    # Validate the cart
+    message = checkout_validate(request, id)
+ 
+    # Get the cart as an object
+    try:
+        cart = Order.objects.get(pk=id)
+    except Order.DoesNotExist:
+        cart = None
 
-        # If no items remain in the cart
-        # TO DO: check the payment
-        # TO DO: mark the order as completed
+    # Double-check that this is the cart's owner
+    if cart.student == request.user:
 
-        # TEMP FOR TESTING
-        return JsonResponse({'error': f'{len(line_items)} items left in cart'}, status=400)
+        # Grab the line items
+        if cart:
+            cart.items = cart.line_items.all()
+
+        # If we're posting, validate payment and submit the order
+        if request.method == 'POST':
+            paid = validate_payment(request)
+            if paid:
+                cart.completed = datetime.now(timezone.utc)
+                cart.save()
+                payment_form = None
+                message = 'Thank you for your order.' 
+            else:
+                message = 'Payment not valid.  Please try again.'
+                payment_form = GiftCardForm(initial={'total': cart.total})
+
+        # Otherwise, load the cart preview with a blank payment form
+        else:
+            payment_form = GiftCardForm(initial={'total': cart.total})
 
     else:
-        return JsonResponse({'error': 'POST request required'}, status=400)
+        payment_form = None
+        cart = None
+
+    return render(request, 'enrollment/cart.html', {
+            'cart': cart,
+            'message': message,
+            'semester': latest_semester(),
+            'payment_form': payment_form
+        })

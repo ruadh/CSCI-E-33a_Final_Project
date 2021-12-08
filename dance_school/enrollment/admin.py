@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.utils.safestring import mark_safe  
 from django.urls import reverse
 from django.conf import settings
-from .models import User, Semester, Course, Offering, Location, LineItem, Order
+from .models import User, Semester, Course, Offering, Location, LineItem, Order, GiftCard
 
 # TO DO:  Figure out local time zones...
 # timezone.activate(pytz.timezone(settings.DEFAULT_TIMEZONE))
@@ -57,4 +57,4 @@ admin.site.register(Offering, OfferingAdmin)
 admin.site.register(Location)
 admin.site.register(Order, OrderAdmin)
 admin.site.register(LineItem, LineItemAdmin)
-
+admin.site.register(GiftCard)

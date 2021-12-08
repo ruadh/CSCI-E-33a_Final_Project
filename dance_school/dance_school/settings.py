@@ -141,7 +141,6 @@ WEEKDAYS = (
 # TO DO:  Replace this with a more realistic size
 PAGE_SIZE = 5
 
-
 # ENTER YOUR SCHOOL'S CUSTOMIZATIONS HERE:
 # NOTE:  These must also be added to context_processors.py to be used by Django templates and/or JavaScript
 
