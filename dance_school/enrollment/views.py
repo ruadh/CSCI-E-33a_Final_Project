@@ -371,7 +371,7 @@ def update_cart(request, id):
 @login_required
 # TO DO:  ADD CSRF HANDLING
 @csrf_exempt
-def checkout_validate(request, id):
+def validate_checkout(request, id):
     try:
         cart = Order.objects.get(pk=id)
     except Order.DoesNotExist:
@@ -413,7 +413,7 @@ def checkout_validate(request, id):
 # Validate payment
 @login_required
 @csrf_exempt
-def validate_payment(request):
+def pay(request):
     if request.method == 'POST':
         form = GiftCardForm(request.POST)
         if form.is_valid():
@@ -433,50 +433,58 @@ def validate_payment(request):
                 return True
 
 
-# Preview the cart before checkout
+# Preview, submit, or view completed cart
 @login_required
 @csrf_exempt
-def checkout_preview(request, id):
-    
-    # Validate the cart
-    message = checkout_validate(request, id)
- 
-    # Get the cart as an object
+def checkout(request, id):
+
+    # Get the cart
     try:
         cart = Order.objects.get(pk=id)
-    except Order.DoesNotExist:
-        cart = None
-
-    # Double-check that this is the cart's owner
-    if cart.student == request.user:
-
-        # Grab the line items
+        # Grab the line items to pass to the Django template
         if cart:
             cart.items = cart.line_items.all()
+    except Order.DoesNotExist:
+        cart = None
+        # TO DO:  add handling here if there's no cart
 
-        # If we're posting, validate payment and submit the order
-        if request.method == 'POST':
-            paid = validate_payment(request)
-            if paid:
-                cart.completed = datetime.now(timezone.utc)
-                cart.save()
-                payment_form = None
-                message = 'Thank you for your order.' 
-            else:
-                message = 'Payment not valid.  Please try again.'
-                payment_form = GiftCardForm(initial={'total': cart.total})
 
-        # Otherwise, load the cart preview with a blank payment form
-        else:
+    if request.method == 'GET':
+
+        # If the cart isn't completed, validate the items, then load the preview with a payment form
+        if cart.completed == None:
+            message = validate_checkout(request, id)
             payment_form = GiftCardForm(initial={'total': cart.total})
 
-    else:
-        payment_form = None
-        cart = None
+        # If the cart is completed, check that the user is authorized (since we're not validating cart) and show the confirmation page
+        else:
+            payment_form = None
+            if cart.student != request.user:
+                cart = None
+                message = 'You may not view other users\' orders'
 
+    elif request.method == 'POST':
+        # TO DO:  Make sure we have a cart value at this point
+        # Validate payment and submit the order
+        paid = pay(request)
+        if paid:
+            cart.completed = datetime.now(timezone.utc)
+            cart.save()
+            payment_form = None
+            message = 'Thank you for your order.' 
+        # If payment fails, show an error and present the form again
+        else:
+            payment_form = GiftCardForm(initial={'total': cart.total})
+            message = 'Payment not valid.  Please try again.'
+
+    else:
+        message = 'POST or GET request required.'
+        payment_form = None
+    
     return render(request, 'enrollment/cart.html', {
-            'cart': cart,
-            'message': message,
-            'semester': latest_semester(),
-            'payment_form': payment_form
-        })
+        'cart': cart,
+        'message': message,
+        'semester': latest_semester(),
+        'payment_form': payment_form
+    })
+    

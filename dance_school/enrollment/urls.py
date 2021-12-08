@@ -19,7 +19,7 @@ urlpatterns = [
 
     # # API
     path('cart/<int:id>', views.update_cart, name='update_cart'),
-    path('checkout/<int:id>', views.checkout_preview, name='checkout'),
+    path('checkout/<int:id>', views.checkout, name='checkout'),
     # path('likes/<int:id>', views.toggle_like, name='toggle_like'),
     # path('follows/<int:id>', views.toggle_follow, name='toggle_follow'),
 ]
