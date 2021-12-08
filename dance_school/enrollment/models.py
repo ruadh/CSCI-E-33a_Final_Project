@@ -60,7 +60,7 @@ class Semester(models.Model):
     registration_open = models.DateTimeField(null=False, blank=False)
     registration_close = models.DateTimeField(null=False, blank=False)
     recital_date = models.DateTimeField(null=True, blank=True)
-    hide = models.BooleanField(default=True, null=True, blank=False)
+    hide = models.BooleanField(default=True, null=True, blank=True)
 
     # CITATION:  https://stackoverflow.com/a/54011108
     def clean(self):
@@ -212,5 +212,6 @@ class GiftCard(models.Model):
     pin = models.CharField(max_length=4, null=False, blank=False)
     amount = models.DecimalField(max_digits=6, decimal_places=2, null=False, blank=False)
 
+    # Display the last 4 digits
     def __str__(self):
         return f'x{self.card_number[-4:]}'

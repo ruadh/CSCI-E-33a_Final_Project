@@ -447,7 +447,13 @@ def checkout(request, id):
     except Order.DoesNotExist:
         cart = None
         message = f'Order {id} not found.'
-        # TO DO:  add handling here if there's no cart
+        # payment_form = None
+
+    # TO DO:  Clarify none vs. set behavior
+    # Prepare a payment form to pass back to the template, unless cleared later
+    # (There are more scenarios where the form is needed than ones where it's not)
+    # payment_form = GiftCardForm(initial={'total': cart.total})
+    payment_form = None
 
 
     if request.method == 'GET':
@@ -455,7 +461,11 @@ def checkout(request, id):
         # If the cart isn't completed, validate the items, then load the preview with a payment form
         if cart.completed == None:
             message = validate_checkout(request, id)
-            payment_form = GiftCardForm(initial={'total': cart.total})
+            if cart.student != request.user:
+                cart = None
+                # payment_form = None
+            else:
+                payment_form = GiftCardForm(initial={'total': cart.total})
 
         # If the cart is completed, check that the user is authorized (since we're not validating cart) and show the confirmation page
         else:
@@ -467,22 +477,30 @@ def checkout(request, id):
                 message = None
 
     elif request.method == 'POST':
-        # TO DO:  Make sure we have a cart value at this point
-        # Validate payment and submit the order
-        paid = pay(request)
-        if paid:
-            cart.completed = datetime.now(timezone.utc)
-            cart.save()
-            payment_form = None
-            message = 'Thank you for your order.' 
-        # If payment fails, show an error and present the form again
-        else:
-            payment_form = GiftCardForm(initial={'total': cart.total})
-            message = 'Payment not valid.  Please try again.'
+
+        # Revalidate the cart, in case it has become invalid since the preview screen was loaded
+        message = validate_checkout(request, id)
+        if message == None:
+
+            # TO DO:  Make sure we have a cart value at this point
+            # Validate payment and submit the order
+            paid = pay(request)
+            if paid:
+                cart.completed = datetime.now(timezone.utc)
+                cart.save()
+                # payment_form = None
+                message = 'Thank you for your order.' 
+            else:
+                payment_form = GiftCardForm(initial={'total': cart.total})
+                message = 'Payment declined.  Please try again.'
+        # If someone manages to post a cart they don't own, don't render the cart or payment form
+        elif cart.student != request.user:
+            cart = None
+            # payment_form = None
 
     else:
         message = 'POST or GET request required.'
-        payment_form = None
+        # payment_form = None
     
     return render(request, 'enrollment/cart.html', {
         'cart': cart,

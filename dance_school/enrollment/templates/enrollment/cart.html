@@ -33,7 +33,11 @@
                 {% endif %}
                 <ul id="cart-items">
                 {% for item in cart.items %}
-                    <li data-offering={{item.offering.id}}>{{item.offering.course.title}} {{item.offering.weekday_name}} ${{item.price}} <button class="remove-button" data-item={{item.id}}>Remove</button></li>
+                    <li data-offering={{item.offering.id}}>{{item.offering.course.title}} {{item.offering.weekday_name}} ${{item.price}} 
+                        {% if not cart.completed %}
+                            <button class="remove-button" data-item={{item.id}}>Remove</button>
+                        {% endif %}
+                    </li>
                 {% endfor %}
                 </ul>
                 {% if cart.items %}

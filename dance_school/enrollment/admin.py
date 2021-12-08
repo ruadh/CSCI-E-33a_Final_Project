@@ -49,6 +49,9 @@ class UserAdmin(admin.ModelAdmin):
     list_display = ('username', 'first_name', 'last_name','email', 'phone')
     ordering = ('last_name','first_name')
 
+class GiftCardAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'amount')
+
 # Register your models here.
 admin.site.register(User, UserAdmin)
 admin.site.register(Semester, SemesterAdmin)
@@ -57,4 +60,4 @@ admin.site.register(Offering, OfferingAdmin)
 admin.site.register(Location)
 admin.site.register(Order, OrderAdmin)
 admin.site.register(LineItem, LineItemAdmin)
-admin.site.register(GiftCard)
+admin.site.register(GiftCard, GiftCardAdmin)

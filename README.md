@@ -49,7 +49,12 @@ This also lets us control which fields are required on the form level vs. the mo
 In my proposal, I said that checkout should:
 > Validate "payment" (using a dummy credit card number - no integration or security)
 
-I had originally planned to have the dummy credit card number be a hard-coded value, but instead, I decided to store it in a new table based on a GiftCard model, since this also lays the groundwork for including gift card support in the app.  I did NOT implement any substantial validation (like numerical characters only for the card number) for this model, since that's out of scope of my proposal.
+I had originally planned to have the dummy credit card number be a hard-coded value, but instead, I decided to store it in a new table based on a GiftCard model, since this also lays the groundwork for including gift card support in the app.  
+
+Actual gift card handling is out of scope for the final project, so I did NOT implement some things that I would be expected:
+* Validation, such as amount > 0, card_number contains only digits
+* Tracking the original value vs. current balance
+* Recording it as the method of payment for a given order
 
 ### Resisting scope creep
 There are some features that I did not include because they are not needed to meet my spec, but that I'd recommend adding to the requirements if I were building this for a client.
