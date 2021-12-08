@@ -446,6 +446,7 @@ def checkout(request, id):
             cart.items = cart.line_items.all()
     except Order.DoesNotExist:
         cart = None
+        message = f'Order {id} not found.'
         # TO DO:  add handling here if there's no cart
 
 
@@ -462,6 +463,8 @@ def checkout(request, id):
             if cart.student != request.user:
                 cart = None
                 message = 'You may not view other users\' orders'
+            else:
+                message = None
 
     elif request.method == 'POST':
         # TO DO:  Make sure we have a cart value at this point
