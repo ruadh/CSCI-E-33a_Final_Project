@@ -41,6 +41,9 @@ A new Order object requires only the student's foreign key because an order/cart
 The LineItems object represents pending enrollments (still in a shopping cart) and completed enrollments (belonging to a completed order).  I decided to call it "line items" instead of enrollments, because a likely future enhancement would be to also allow students to add non-class products to their carts.
 
 #### TO DO:  MAYBE NOT!!!  Users as Model Forms - UPDATE ME
+
+I decided not to use model forms for registration, since it's easier to apply different validation rules in different contexts with the regular form.  For example, I'm currently requiring all profiel information when the account is created, but a future enhancement would be to only take limited information at registration and require the profile be completed during checkout.
+
 The provided starter files used HTML form in registration.html.   I decided to switch to model forms so we can take advantage on on-page validation, and so we can easily populate the form for an "update your profile" feature.  
 
 This also lets us control which fields are required on the form level vs. the model level.  A likely future enhancement would be to allow users to create accounts with limited information (basic contact info), but require more information at before they check out (terms & conditions, emergency contact info, etc.)   We can't do that if the fields are required at the model level.

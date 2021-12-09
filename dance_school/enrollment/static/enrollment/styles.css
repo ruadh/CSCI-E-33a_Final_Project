@@ -20,6 +20,11 @@ form input[type="submit"] {
     padding-right: 0;
 }
 
+/* Show all buttons in proper capitalization */
+button {
+    text-transform: capitalize;
+  }
+
 /* RESPONSIVE - Styles for larger screens  */
 
 /* @media(min-width: 720px) {

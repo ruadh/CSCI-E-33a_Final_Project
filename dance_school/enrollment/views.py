@@ -294,7 +294,8 @@ def get_cart(request, user=None, add=False):
     except Order.DoesNotExist:
         # If the user doesn't already have an open cart, create one
         if add == True:
-            cart = Order(student=request.user)
+            # cart = Order(student=request.user)
+            cart = Order(student=user)
             cart.save()
         else:
             cart = None
@@ -334,12 +335,11 @@ def merge_carts(request, user=None):
 
     return primary
 
-# Validate a line item before adding to cart or checking out
-# TO DO:  FINISH COMMENTS
-# Action = 'add' or 'checkout'
 
+# Validate a line item before adding to cart or checking out
+# Action = 'add' or 'checkout'
 @login_required
-def validate_item(offering, user, action):
+def validate_item(request, offering, user, action):
     # See if the user is already registered for this offering
     reg = LineItem.objects.filter(order__student=user, offering=offering)
     if reg.exclude(order__completed=None).aggregate(Count('id'))['id__count']:
@@ -375,7 +375,7 @@ def update_cart(request, id):
             return JsonResponse({'error': 'Offering not found'}, status=400)
 
         # Validate
-        validation = validate_item(offering, request.user, 'add')
+        validation = validate_item(request, offering, request.user, 'add')
         # TO DO:  FIX ME HERE
         if validation != None:
             # return validation
@@ -437,8 +437,9 @@ def validate_checkout(request, id):
     
     # Validate each line item again, removing any invalid items from the cart
     removed_list = []
+    #  TO DO:  LEFT OFF HERE
     for line_item in line_items:
-        error = validate_item(line_item.offering, cart.student, 'checkout')
+        error = validate_item(request, line_item.offering, cart.student, 'checkout')
         if error != None:
             # Track a list of items and errors for the message
             removed_list.append(f'{line_item.offering.course.title}: {error}')
@@ -450,7 +451,7 @@ def validate_checkout(request, id):
     if removed_ct > 0:
         removed_list_delimited = '\n'.join(removed_list)
         return f'{removed_ct} item{"" if removed_ct == 1 else "s"} removed from cart: \n{removed_list_delimited}'
-
+    
     return None
 
 

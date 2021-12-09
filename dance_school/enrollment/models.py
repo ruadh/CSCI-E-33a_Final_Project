@@ -17,11 +17,13 @@ TIMEZONES = tuple(zip(pytz.all_timezones, pytz.all_timezones))
 
 
 class User(AbstractUser):
+    # Required info
     timezone = models.CharField(max_length=32, choices=TIMEZONES,
                                 default=settings.DEFAULT_TIMEZONE)
-    first_name = models.CharField(max_length=128, null=True, blank=True)
-    last_name = models.CharField(max_length=128, null=True, blank=True)
+    first_name = models.CharField(max_length=128, null=False, blank=False)
+    last_name = models.CharField(max_length=128, null=False, blank=False)
     email = models.EmailField(max_length=254, null=False, blank=False)
+    # Non-required info
     phone = models.CharField(max_length=32, null=True, blank=True)
     emergency_first = models.CharField(max_length=128, null=True, blank=True)
     emergency_last = models.CharField(max_length=128, null=True, blank=True)
