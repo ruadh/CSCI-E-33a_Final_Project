@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 # from django.http.response import HttpResponse
 # import datetime
 from datetime import datetime
+from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 import pytz
 from django import forms
@@ -148,6 +149,7 @@ def index(request, page=None, message=None):
     page = paginate_offerings(request, offerings)
 
     # If a logged-in user has an active cart, populate it with their incomplete items
+    # TO DO:  Do we want to remove invalid items here as well, or only at checkout?
     if request.user.is_authenticated:
         cart = get_cart(request, request.user, False)
         if cart:
@@ -269,6 +271,7 @@ def paginate_offerings(request, offerings):
 # All completed orders for a given user
 # NOTE:  the user we're intersted in may not be the requestor
 
+@login_required
 def completed_orders(request, user):
     try:
         orders = Order.objects.filter(student=user).exclude(completed=None)
@@ -277,11 +280,17 @@ def completed_orders(request, user):
     return orders
 
 
+@login_required
 # Get the latest incomplete order for a given user, (i.e., their current cart), or optionally create one
 # NOTE:  The UI should enforce no more than one incomplete cart, but if they do, we're only interested in the latest
-def get_cart(request, user, add=False):
+def get_cart(request, user=None, add=False):
+
+    # Default to the logged-in user
+    if user==None:
+        user=request.user
     try:
-        cart = Order.objects.get(student=request.user, completed=None)
+        cart = Order.objects.get(student=user, completed=None)
+        # cart = Order.objects.get(student=request.user, completed=None)
     except Order.DoesNotExist:
         # If the user doesn't already have an open cart, create one
         if add == True:
@@ -289,13 +298,47 @@ def get_cart(request, user, add=False):
             cart.save()
         else:
             cart = None
+    except Order.MultipleObjectsReturned:
+        cart = merge_carts(request, user)
     return cart
 
+
+# Merge duplicate incomplete carts
+@login_required
+def merge_carts(request, user=None):
+    # Default to the requestor
+    if user==None:
+        user=request.user
+    # Only staff can merge other users' carts
+    if request.user!=user and not request.user.is_staff:
+        return None
+    # This should only be called when multiple carts are present, but double-check anyway
+    try:
+        carts = Order.objects.filter(student=user, completed=None)
+    except Order.DoesNotExist:
+        # TO DO:  Is this enough repetition for a refactor?
+        primary = Order(student=user)
+        primary.save()
+    if carts.count() > 1:
+        # Select a primary cart
+        primary = carts.first()
+        # Reassign any line items to the first cart
+        line_items = LineItem.objects.filter(order__student=user, order__completed=None).exclude(order=primary)
+        for line_item in line_items:
+            line_item.order = primary
+            line_item.save()
+        # Delete the duplicate carts
+        for cart in carts:
+            if cart != primary:
+                cart.delete()
+
+    return primary
 
 # Validate a line item before adding to cart or checking out
 # TO DO:  FINISH COMMENTS
 # Action = 'add' or 'checkout'
 
+@login_required
 def validate_item(offering, user, action):
     # See if the user is already registered for this offering
     reg = LineItem.objects.filter(order__student=user, offering=offering)

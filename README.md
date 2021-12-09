@@ -40,7 +40,7 @@ A new Order object requires only the student's foreign key because an order/cart
 #### Line Items 
 The LineItems object represents pending enrollments (still in a shopping cart) and completed enrollments (belonging to a completed order).  I decided to call it "line items" instead of enrollments, because a likely future enhancement would be to also allow students to add non-class products to their carts.
 
-#### TO DO:  MAYBE NOT!!!  Users as Model Forms
+#### TO DO:  MAYBE NOT!!!  Users as Model Forms - UPDATE ME
 The provided starter files used HTML form in registration.html.   I decided to switch to model forms so we can take advantage on on-page validation, and so we can easily populate the form for an "update your profile" feature.  
 
 This also lets us control which fields are required on the form level vs. the model level.  A likely future enhancement would be to allow users to create accounts with limited information (basic contact info), but require more information at before they check out (terms & conditions, emergency contact info, etc.)   We can't do that if the fields are required at the model level.
@@ -55,6 +55,9 @@ Actual gift card handling is out of scope for the final project, so I did NOT im
 * Validation, such as amount > 0, card_number contains only digits
 * Tracking the original value vs. current balance
 * Recording it as the method of payment for a given order
+
+### Passing the request
+A lot of my functions take request as a parameter when it isn't required for the functionality, because it supports @login_required.  ex:  get_cart could doesn't need the request (we could require that the user argument instead of providing a default), but unauthenticated users should not be able to get order data.
 
 ### Resisting scope creep
 There are some features that I did not include because they are not needed to meet my spec, but that I'd recommend adding to the requirements if I were building this for a client.
@@ -80,7 +83,7 @@ of scope for the final project:  it sounds like a quick addition, but we'd also 
 
 ### Passing the user
 
-In several functions, I chose to pass the user as a separate parameter instead of using request.user.  This is not needed for the features in my final project spec, but it leaves open the door for some future enhancements where the user we're interested in isn't necessarily the current user.  Ex: allowing a parent to register along with a child, or allowing an admin to view student information in the front end.
+In several functions, I chose to pass the user as a separate parameter instead of using request.user.  This is not needed for the features in my final project spec, but it leaves open the door for some future enhancements where the user we're interested in isn't necessarily the current user.  Ex: allowing a parent to register along with a child, or allowing an admin to view orders in the front end.
 
 
 
