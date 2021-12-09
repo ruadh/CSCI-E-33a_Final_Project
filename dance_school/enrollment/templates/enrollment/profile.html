@@ -8,8 +8,9 @@
 
 <div class="row">
     {% if profile %}
-    <div class="col-md">
-        <h2>User Profile</h2>
+    <div id="profile-view" class="col-md">
+        <h2>User Profile <button id="edit-profile-button" data-profile={{profile.id}}>Edit</button></h2>
+        
         <div class="card">
             <div class="card-body">
                 <h3 class="card-title">Account</h3>
@@ -19,22 +20,38 @@
         </div>
 
         <div class="card">
-            <div class="card-body">
+            <div class="card-body editable">
                 <h3 class="card-title">About Me</h3>
-                <p><span class="label">First Name:</span> {{profile.first_name}}</p>
-                <p><span class="label">Last Name:</span> {{profile.last_name}}</p>
-                <p><span class="label">Email:</span> {{profile.email}}</p>
-                <p><span class="label">Phone:</span> {{profile.phone}}</p>
+                <div>
+                    <span class="label">First Name:</span> <span class="value" id="first-name">{{profile.first_name}}</span>
+                </div>
+                <div>    
+                    <span class="label">Last Name:</span> <span class="value" id="last-name">{{profile.last_name}}</span>
+                </div>
+                <div>
+                    <span class="label">Email:</span> <span class="value" id="email">{{profile.email}}</span>
+                </div>
+                <div>
+                    <span class="label">Phone:</span> <span class="value" id="phone">{{profile.phone}}</span>
+                </div>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-body">
+            <div class="card-body editable">
                 <h3 class="card-title">Emergency Contact</h3>
-                <p><span class="label">First Name:</span> {{profile.emergency_first}}</p>
-                <p><span class="label">Last Name:</span> {{profile.emergency_last}}</p>
-                <p><span class="label">Email:</span> {{profile.emergency_email}}</p>
-                <p><span class="label">Phone:</span> {{profile.emergency_phone}}</p>
+                <div>
+                    <span class="label">First Name:</span> <span class="value" id="emergency-first">{{profile.emergency_first}}</span>
+                </div>
+                <div>
+                    <span class="label">Last Name:</span> <span class="value" id="emergency-last">{{profile.emergency_last}}</span>
+                </div>
+                <div>
+                    <span class="label">Email:</span> <span class="value" id="emergency-email">{{profile.emergency_email}}</span>
+                </div>
+                <div>
+                    <span class="label">Phone:</span> <span class="value" id="emergency-phone">{{profile.emergency_phone}}</span>
+                </div>
             </div>
         </div>
 
@@ -47,6 +64,10 @@
         </div>
     </div>
     {% endif %}
+
+    <div id="profile-edit" class="col-md">
+
+    </div>
 
     <!-- On larger screens, put orders and enrollment history in their own column-->
     <div class="col-md">
