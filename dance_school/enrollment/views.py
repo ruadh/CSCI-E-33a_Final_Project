@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from datetime import datetime
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
+import json
 import pytz
 from django import forms
 # from django.db import models
@@ -132,8 +133,7 @@ def register(request):
                 'message': 'Something else went wrong.',
             })
         login(request, user)
-        # TO DO:  GO TO THE NEW URL, NOT RENDER
-        return view_profile(request, user.id)
+        return HttpResponseRedirect(reverse('profile', args=[user.id]))
     else:
         return render(request, 'enrollment/register.html')
 
@@ -149,7 +149,6 @@ def index(request, page=None, message=None):
     page = paginate_offerings(request, offerings)
 
     # If a logged-in user has an active cart, populate it with their incomplete items
-    # TO DO:  Do we want to remove invalid items here as well, or only at checkout?
     if request.user.is_authenticated:
         cart = get_cart(request, request.user, False)
         if cart:
@@ -162,50 +161,81 @@ def index(request, page=None, message=None):
 
     return render(request, 'enrollment/index.html', {
         'page': page,
-        'cart': cart,
+        'cart': cart,                                         
         'message': message,
         'semester': semester
     })
 
 
 @login_required
-def view_profile(request, id):
-    # Non-admin users may only view their own profiles
-    if request.user.id == id or request.user.is_staff:
+# TO DO:  add CSRF handling on the PUT
+@csrf_exempt
+def profile(request, id):
+    if request.method == 'PUT':
         try:
-            profile = User.objects.get(id=id)
+            user = User.objects.get(pk=id)
         except User.DoesNotExist:
+            return JsonResponse({'error': 'User not found.'}, status=404)
+        
+        # Don't allow non-staff users to edit other's profiles
+        if request.user != user and not request.user.is_staff:
+            return JsonResponse({'error': 'You are not authorized to edit this profile.'}, status=400)
+
+        # Convert the passed JSON into a Python dictionary
+        body = json.loads(request.body)
+        
+        # # LEFT OFF HERE
+        for field in body:
+            field_id = field
+            field_value = body.get(field_id).strip()
+            return JsonResponse({'error': f'First field name: {field_id} Value: {field_value}'}, status=200)
+
+        # first_name = body.get('first-name').strip()
+    
+        return JsonResponse({'error': f'Success?'}, status=200)
+
+    elif request.method == 'GET':
+        # Non-admin users may only view their own profiles
+        if request.user.id == id or request.user.is_staff:
+            try:
+                profile = User.objects.get(id=id)
+            except User.DoesNotExist:
+                return render(request, 'enrollment/profile.html', {
+                    'orders': None,
+                    'message': f'User {id} not found.'
+                })
+
+            # Prepare the items to pass to the Django template:
+            # CITATION:  Passing nested context items:  https://stackoverflow.com/q/6540032
+
+            # Pass the students' completed enrollments, grouped by semester
+            # Find all semesters in which the student has completed orders
+            semesters = Semester.objects.filter(
+                offerings__line_items__order__student=id, offerings__line_items__order__completed__isnull=False).order_by('-start_date').distinct()
+            for semester in semesters:
+                semester.enrollments = LineItem.objects.filter(order__student=id).filter(
+                    offering__semester=semester).exclude(order__completed=None)
+
+            # Pass the order history, including nested line items
+            orders = completed_orders(request, id).order_by('-completed')
+            for order in orders:
+                order.items = order.line_items.all()
+
+            return render(request, 'enrollment/profile.html', {
+                'orders': orders,
+                'semesters': semesters,
+                'profile': profile
+            })
+        else:
             return render(request, 'enrollment/profile.html', {
                 'orders': None,
-                'message': f'User {id} not found.'
+                'message': 'You may not view other users\' profiles'
             })
-
-        # Prepare the items to pass to the Django template:
-        # CITATION:  Passing nested context items:  https://stackoverflow.com/q/6540032
-
-        # Pass the students' completed enrollments, grouped by semester
-        # Find all semesters in which the student has completed orders
-        semesters = Semester.objects.filter(
-            offerings__line_items__order__student=id, offerings__line_items__order__completed__isnull=False).order_by('-start_date').distinct()
-        for semester in semesters:
-            semester.enrollments = LineItem.objects.filter(order__student=id).filter(
-                offering__semester=semester).exclude(order__completed=None)
-
-        # Pass the order history, including nested line items
-        orders = completed_orders(request, id).order_by('-completed')
-        for order in orders:
-            order.items = order.line_items.all()
-
-        return render(request, 'enrollment/profile.html', {
-            'orders': orders,
-            'semesters': semesters,
-            'profile': profile
-        })
     else:
         return render(request, 'enrollment/profile.html', {
-            'orders': None,
-            'message': 'You may not view other users\' profiles'
-        })
+                'orders': None,
+                'message': 'PUT or GET method required'
+            })
 
 
 @login_required
@@ -376,9 +406,7 @@ def update_cart(request, id):
 
         # Validate
         validation = validate_item(request, offering, request.user, 'add')
-        # TO DO:  FIX ME HERE
         if validation != None:
-            # return validation
             return JsonResponse({'error': validation}, status=400)
 
         # If the user doesn't already have an open order, create a new one
@@ -390,7 +418,7 @@ def update_cart(request, id):
             offering=offering,
             price=offering.price
         )
-        # TO DO: Add support for planned absences, price, etc.
+        # TO DO: Add support for planned absences
         line_item.save()
 
         return JsonResponse(line_item.serialize(), status=200)
@@ -437,7 +465,6 @@ def validate_checkout(request, id):
     
     # Validate each line item again, removing any invalid items from the cart
     removed_list = []
-    #  TO DO:  LEFT OFF HERE
     for line_item in line_items:
         error = validate_item(request, line_item.offering, cart.student, 'checkout')
         if error != None:
@@ -463,7 +490,6 @@ def pay(request):
         form = GiftCardForm(request.POST)
         if form.is_valid():
             try: 
-                # TO DO:  Validate the rest of the details
                 card = GiftCard.objects.get(card_number=form.cleaned_data['card_number'], month=form.cleaned_data['month'], year=form.cleaned_data['year'], pin=form.cleaned_data['pin'])
             except GiftCard.DoesNotExist:
                 return False
@@ -473,18 +499,35 @@ def pay(request):
             if card.amount < total:
                 return False
             else:
+                # Deduct the total from the gift card balance
                 card.amount -= total
                 card.save()
                 return True
 
+# Helper function:  Get profile only if you are its owner or a staff user
+@login_required
+def authorized_get_profile(request, id):
+    try:
+        profile = User.objects.get(pk=id)
+    except User.DoesNotExist:
+        profile = None
+    else:
+        # Return it only if it is being requested by the owner or a staff user
+        if profile != request.user and not request.user.is_staff:
+            profile = None
+    finally:
+        return profile
+
 
 # Preview, submit, or view completed cart
 @login_required
+# TO DO:  Add CSRF support
 @csrf_exempt
 def checkout(request, id):
 
-    # Default behavior:  no payment form.  (Will be added below if needed)
+    # Default behavior:  no payment form or update profile pseudo-form (Will be added below if needed)
     payment_form = None
+    profile = None
 
     # Get the cart
     try:
@@ -496,14 +539,16 @@ def checkout(request, id):
         cart = None
         message = f'Order {id} not found.'
     else:
+
         if request.method == 'GET':
-            # If the cart isn't completed, validate the items, then load the preview with a payment form
+            # If the cart isn't completed, validate the items, then load the preview with a payment form and profile 
             if cart.completed == None:
                 message = validate_checkout(request, id)
                 if cart.student != request.user:
                     cart = None
                 else:
                     payment_form = GiftCardForm(initial={'total': cart.total})
+                    profile = authorized_get_profile(request, cart.student.id)
             # If the cart is completed, check that the user is authorized (since we're not validating cart) and show the confirmation page
             else:
                 payment_form = None
@@ -524,6 +569,7 @@ def checkout(request, id):
                     message = 'Thank you for your order.' 
                 else:
                     payment_form = GiftCardForm(initial={'total': cart.total})
+                    profile = authorized_get_profile(request, cart.student.id)
                     message = 'Payment declined.  Please try again.'
             # If someone manages to post a cart they don't own, don't render the cart or payment form
             elif cart.student != request.user:
@@ -537,6 +583,7 @@ def checkout(request, id):
             'cart': cart,
             'message': message,
             'semester': latest_semester(),
-            'payment_form': payment_form
+            'payment_form': payment_form,
+            'profile': profile
         })
     

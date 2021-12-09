@@ -62,6 +62,10 @@ Actual gift card handling is out of scope for the final project, so I did NOT im
 ### Passing the request
 A lot of my functions take request as a parameter when it isn't required for the functionality, because it supports @login_required.  ex:  get_cart could doesn't need the request (we could require that the user argument instead of providing a default), but unauthenticated users should not be able to get order data.
 
+
+### Cart Validation
+I decided to block/remove invalid cart items only when the user is intending to interact with the cart:  adding an item, proceeding to checkout, processing checkout.  I decided NOT to run the validation when loading the cart preview on index.html, since that will often happen when the user is trying to do something else (load the class list, browse to another page, etc.).  So removing items and showing an error message related that isn't related to their intended task would be confusing.
+
 ### Resisting scope creep
 There are some features that I did not include because they are not needed to meet my spec, but that I'd recommend adding to the requirements if I were building this for a client.
 

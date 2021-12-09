@@ -20,12 +20,13 @@ form input[type="submit"] {
     padding-right: 0;
 }
 
-/* Show all buttons in proper capitalization */
-button {
-    text-transform: capitalize;
-  }
 
-/* RESPONSIVE - Styles for larger screens  */
+/* Left-justify Boostrap Grid containers instead of default centered behavior */
+.container{
+    margin-left: 10px;
+}
+
+/* RESPONSIVE - Styles for larger screens - Most responsive behavior is based on the Boostrap md breakpoint  */
 
 /* @media(min-width: 720px) {
 
