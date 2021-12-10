@@ -184,14 +184,17 @@ def profile(request, id):
         # Convert the passed JSON into a Python dictionary
         body = json.loads(request.body)
         
-        # # LEFT OFF HERE
+        # Update each of the 
         for field in body:
-            field_id = field
-            field_value = body.get(field_id).strip()
-            return JsonResponse({'error': f'First field name: {field_id} Value: {field_value}'}, status=200)
+            field_value = body.get(field).strip()
+            # CITATION: https://www.programiz.com/python-programming/methods/built-in/setattr
+            # NOTE: model fields use underscores, while HTML elements use dashes
+            setattr(user, field.replace('-', '_'), field_value)
+        user.save()
+        # TO DO:  error handling here
 
-        # first_name = body.get('first-name').strip()
-    
+        # TO DO:  create the serializer function
+        # return JsonResponse(user.serialize(), status=200)    
         return JsonResponse({'error': f'Success?'}, status=200)
 
     elif request.method == 'GET':
