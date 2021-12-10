@@ -128,6 +128,7 @@ STATIC_URL = '/static/'
 
 AUTH_USER_MODEL = 'enrollment.User'
 
+# Note:  when using Python datetime, use weekday(), not isoweekday()
 WEEKDAYS = (
        (0, 'Monday'),
        (1, 'Tuesday'),

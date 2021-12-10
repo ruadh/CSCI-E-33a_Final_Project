@@ -77,6 +77,18 @@ Actual gift card handling is out of scope for the final project, so I did NOT im
 * Tracking the original value vs. current balance
 * Recording it as the method of payment for a given order
 
+#### Vacation
+I decided to tie vacation dates to a semester because the most natural place to enter this information is in an inline in the semester admin.  
+
+I *think* it may be also be better for querying:  if we are trying to find out if an offering date falls in a vacation, we can limit to vacations belonging to a semester ID, instead of doing date math on all date ranges in the vacation table.  I don't know for sure that that's true, though.
+
+
+#### Calculating vs. storing offering dates
+TO DO:  explain
+
+#### Formatting and parsing dates in the template vs. doing it in the back-end and passing the string
+TO DO:  technically passing the actual date objects lets us do date-aware stuff.  Not sure about performance, though
+
 ### Passing the request
 A lot of my functions take request as a parameter when it isn't required for the functionality, because it supports @login_required.  ex:  get_cart could doesn't need the request (we could require that the user argument instead of providing a default), but unauthenticated users should not be able to get order data.
 
@@ -96,6 +108,8 @@ For the profile update form, I decided to use a faux form approach like the edit
 When the API receives the profile update request (the profile function in views.py with a PUT request), I decided to pull the field names from the passed JSON programmatically, rather than hard-coding the list of fields to be processed.   That keeps the code more compact, reduces the amount of work needed when adding new profile fields, and lets us use the same code to update sub-sets of the user profile in the future (ex: just the emergency contact).  
 
 The downside of that approach is that it opens up the ability to edit ANY user field, which is not secure.  (ex:  It would allow a user to set themselves as staff if they could manipulate the payload.)  To prevent this, fields are checked against an allow list, EDITABLE_USER_FIELDS, in settings.py.  I don't know enough about the Django user model to be sure that this would be good enough in a production setting, but I think it's good enough for a class project.
+
+
 
 ### Resisting scope creep
 There are some features that I did not include because they are not needed to meet my spec, but that I'd recommend adding to the requirements if I were building this for a client.

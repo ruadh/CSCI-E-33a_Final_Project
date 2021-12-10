@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.utils.safestring import mark_safe  
 from django.urls import reverse
 from django.conf import settings
-from .models import User, Semester, Course, Offering, Location, LineItem, Order, GiftCard
+from .models import User, Semester, Course, Offering, Location, LineItem, Order, GiftCard, Vacation
 
 # TO DO:  Figure out local time zones...
 # timezone.activate(pytz.timezone(settings.DEFAULT_TIMEZONE))
@@ -21,6 +21,11 @@ class LineItemStackedInline(admin.StackedInline):
 
 class OfferingTabularInline(admin.TabularInline):
     model = Offering
+    extra = 0
+
+class VacationTabularInline(admin.TabularInline):
+    model = Vacation
+    extra = 0
 
 # List views - Customize the list/summary views for a model
 class LineItemAdmin(admin.ModelAdmin):
@@ -35,6 +40,7 @@ class OrderAdmin(admin.ModelAdmin):
 
 class OfferingAdmin(admin.ModelAdmin):
     list_display = ('semester', 'course', 'weekday', 'start_time', 'location', 'spots_left', 'contact_sheet')
+    readonly_fields = ('offering_dates', 'no_class_dates', 'num_weeks')
 
     # CITATION:  https://stackoverflow.com/a/32220985
     def contact_sheet(self, obj):
@@ -43,7 +49,7 @@ class OfferingAdmin(admin.ModelAdmin):
         ))
 
 class SemesterAdmin(admin.ModelAdmin):
-    inlines = [OfferingTabularInline]
+    inlines = [VacationTabularInline, OfferingTabularInline]
 
 class UserAdmin(admin.ModelAdmin):
     list_display = ('username', 'first_name', 'last_name','email', 'phone')
@@ -61,3 +67,4 @@ admin.site.register(Location)
 admin.site.register(Order, OrderAdmin)
 admin.site.register(LineItem, LineItemAdmin)
 admin.site.register(GiftCard, GiftCardAdmin)
+admin.site.register(Vacation)

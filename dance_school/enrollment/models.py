@@ -1,6 +1,6 @@
 from django.db.models.deletion import PROTECT
 import pytz
-# from datetime import datetime
+from datetime import date, datetime, timedelta
 from django.utils import timezone
 from django.conf import settings
 from django.db import models
@@ -10,11 +10,33 @@ from django.core.exceptions import ValidationError
 from markdown2 import Markdown
 
 
+# CONSTANTS
+
 # Timezones list approach from:  https://stackoverflow.com/a/45867250
 TIMEZONES = tuple(zip(pytz.all_timezones, pytz.all_timezones))
 
-# Create your models here.
 
+# HELPER FUNCTIONS  (used only for models)
+
+# CITATION:  Date math help from https://www.pressthered.com/adding_dates_and_times_in_python/
+def weekdays_in_range(start, end, weekday):
+    try:
+        start <= end
+        0 <= weekday <= 7
+    except ValidationError:
+        return None
+    diff = weekday - start.weekday()
+    if diff < 0:
+        diff+=7
+    date = start + timedelta(days=diff)
+    dates = []
+    while start <= date <= end:
+        dates.append(date)
+        date += timedelta(days=7)
+    return dates
+
+
+# MODELS
 
 class User(AbstractUser):
     # Required info
@@ -30,7 +52,8 @@ class User(AbstractUser):
     emergency_email = models.EmailField(max_length=254, null=True, blank=True)
     emergency_phone = models.CharField(max_length=32, null=True, blank=True)
     accept_terms = models.DateTimeField(null=True, blank=True)
-    contact_sheet_notes = models.CharField(max_length=2048, null=True, blank=True)
+    contact_sheet_notes = models.CharField(
+        max_length=2048, null=True, blank=True)
 
     # TEMP FOR TESTING
     @property
@@ -47,7 +70,6 @@ class User(AbstractUser):
         for field in settings.EDITABLE_USER_FIELDS:
             profile[field.replace('_', '-')] = getattr(self, field)
         return profile
-
 
 
 class Location(models.Model):
@@ -101,7 +123,8 @@ class Semester(models.Model):
 class Course(models.Model):
     title = models.CharField(max_length=64, null=False, blank=False)
     subtitle = models.CharField(max_length=256, null=False, blank=False)
-    description = models.TextField(max_length=4096, null=False, blank=False, help_text=settings.MARKDOWN_HELP_TEXT)
+    description = models.TextField(
+        max_length=4096, null=False, blank=False, help_text=settings.MARKDOWN_HELP_TEXT)
     requirements = models.CharField(max_length=256, null=False, blank=False)
     qualifications = models.CharField(max_length=1024, null=False, blank=False)
 
@@ -142,10 +165,36 @@ class Offering(models.Model):
     @property
     def spots_left(self):
         try:
-            sold = self.line_items.exclude(order__completed=None).aggregate(Count('id'))['id__count']
+            sold = self.line_items.exclude(
+                order__completed=None).aggregate(Count('id'))['id__count']
         except Exception:
             sold = 0
         return self.capacity - sold
+
+    @property
+    def no_class_dates(self):
+        vacations = Vacation.objects.filter(semester=self.semester)
+        dates = []
+        for vacation in vacations:
+            dates.extend(weekdays_in_range(vacation.start_date, vacation.end_date, self.weekday))
+        return dates if len(dates) > 0 else []
+
+    @property
+    def offering_dates(self):
+        # Store the no class dates, so we don't call it repeatedly in the list comprehension
+        no_class = self.no_class_dates
+        all_dates = weekdays_in_range(self.start_date, self.end_date, self.weekday)
+        dates = [dt for dt in all_dates if dt not in no_class]
+        return dates if len(dates) > 0 else []
+
+    @property
+    def num_weeks(self):
+        return len(self.offering_dates) if self.offering_dates else None
+
+    @property
+    def offering_dates_text(self):
+        # CITATION:  https://stackoverflow.com/a/8722486/15100723
+        return ", ".join(date.strftime("%-m/%-d") for date in self.offering_dates)
 
     # CITATION:  https://stackoverflow.com/a/54011108
     def clean(self):
@@ -216,13 +265,37 @@ class LineItem(models.Model):
             'price': self.offering.price
         }
 
+
 class GiftCard(models.Model):
     card_number = models.CharField(max_length=16, null=False, blank=False)
     month = models.CharField(max_length=2, null=False, blank=False)
     year = models.CharField(max_length=4, null=False, blank=False)
     pin = models.CharField(max_length=4, null=False, blank=False)
-    amount = models.DecimalField(max_digits=6, decimal_places=2, null=False, blank=False)
+    amount = models.DecimalField(
+        max_digits=6, decimal_places=2, null=False, blank=False)
 
     # Display the last 4 digits
     def __str__(self):
         return f'x{self.card_number[-4:]}'
+
+
+class Vacation(models.Model):
+    semester = models.ForeignKey(
+        Semester, on_delete=PROTECT, null=False, blank=False, related_name='vacations')
+    start_date = models.DateField(null=False, blank=False)
+    end_date = models.DateField(null=False, blank=False)
+
+
+    # CITATION:  https://stackoverflow.com/a/54011108
+    def clean(self):
+        # Clean is applied before required fields are checked, so we have to double-check here
+        if self.start_date != None and self.end_date != None:
+            if self.start_date > self.end_date:
+                raise ValidationError(
+                    'Start date may not be later than end date')
+            if self.start_date <= self.semester.start_date:
+                raise ValidationError(
+                    'Vacations must begin later than the first day of the semester')
+            if self.end_date >= self.semester.end_date:
+                raise ValidationError(
+                    'Vacations must end before the last day of the semester')
