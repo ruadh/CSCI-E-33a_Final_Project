@@ -184,18 +184,18 @@ def profile(request, id):
         # Convert the passed JSON into a Python dictionary
         body = json.loads(request.body)
         
-        # Update each of the 
+        # Update each of the fields that were passed, if on the allow list
         for field in body:
-            field_value = body.get(field).strip()
-            # CITATION: https://www.programiz.com/python-programming/methods/built-in/setattr
             # NOTE: model fields use underscores, while HTML elements use dashes
-            setattr(user, field.replace('-', '_'), field_value)
+            field_name = field.replace('-', '_')
+            if field_name in settings.EDITABLE_USER_FIELDS:
+                field_value = body.get(field).strip()
+                # CITATION: https://www.programiz.com/python-programming/methods/built-in/setattr
+                setattr(user, field_name, field_value)
         user.save()
-        # TO DO:  error handling here
 
-        # TO DO:  create the serializer function
-        # return JsonResponse(user.serialize(), status=200)    
-        return JsonResponse({'error': f'Success?'}, status=200)
+        # Return the updated profile's editable fields
+        return JsonResponse(user.serialize_editable(), status=200)    
 
     elif request.method == 'GET':
         # Non-admin users may only view their own profiles

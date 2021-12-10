@@ -40,6 +40,15 @@ class User(AbstractUser):
     def __str__(self):
         return f'{self.first_name} {self.last_name} ({self.username})'
 
+    # CITATION:     Adapted from provided models.py in Project 3
+    def serialize_editable(self):
+        """Returns a JSON object containing the user's editable profile fields with dashes instead of underscores in names"""
+        profile = {}
+        for field in settings.EDITABLE_USER_FIELDS:
+            profile[field.replace('_', '-')] = getattr(self, field)
+        return profile
+
+
 
 class Location(models.Model):
     name = models.CharField(max_length=128, null=False, blank=False)

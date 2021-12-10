@@ -15,10 +15,28 @@ CITATION:  Learned approach from https://chriskief.com/2013/09/19/access-django-
 ### settings.py
 Django configuration.  Mostly standard, except that I added:
 1. A context processor so I can pass values in this file to Django templates and/or JS
-2. Settings that may vary by dance school, such as the school name, local time zone, default class capacity, etc.
+2. Customizations for this application, such as the auth user model, and constants such as the weekday integer/name mappings
+3. Settings that may vary by dance school, such as the school name, local time zone, default class capacity, etc.
 
 ### models.py
-The models used in this project.  Substantial changes made.
+The models used in this project. 
+
+### views.py
+Form classes and navigation, API, and utility functions in Python.
+
+### admin.py
+Customizations to the Django admin area, which is where most administrator tasks occur.
+
+### enrollment.js
+JavaScript for BLAH
+
+### styles.css
+This application mostly uses Bootstrap styles.  This file contains a small amount of CSS for adding to or modifying those styles.
+
+### tests.py
+My attempts at unit testing.  Currently failing at this.  TO DO:  update me
+
+### TO DO:  TEMPLATES
 
 
 
@@ -66,6 +84,19 @@ A lot of my functions take request as a parameter when it isn't required for the
 ### Cart Validation
 I decided to block/remove invalid cart items only when the user is intending to interact with the cart:  adding an item, proceeding to checkout, processing checkout.  I decided NOT to run the validation when loading the cart preview on index.html, since that will often happen when the user is trying to do something else (load the class list, browse to another page, etc.).  So removing items and showing an error message related that isn't related to their intended task would be confusing.
 
+
+### Profile update form
+
+#### Faux form approach
+For the profile update form, I decided to use a faux form approach like the edit post feature in Project 4:  values on the page are replaced with inputs via JavaScript, then the results are submitted for processing via the API.  I chose to do that because:
+* Most of my features turned out to be doable just with Django, and I needed somewhere to meet the JS requirement
+* Using JS lets me implement the "better" feature of allowing a user to edit their profile during checkout without leaving the shopping cart
+
+#### Not hard-coding the fields to be processed
+When the API receives the profile update request (the profile function in views.py with a PUT request), I decided to pull the field names from the passed JSON programmatically, rather than hard-coding the list of fields to be processed.   That keeps the code more compact, reduces the amount of work needed when adding new profile fields, and lets us use the same code to update sub-sets of the user profile in the future (ex: just the emergency contact).  
+
+The downside of that approach is that it opens up the ability to edit ANY user field, which is not secure.  (ex:  It would allow a user to set themselves as staff if they could manipulate the payload.)  To prevent this, fields are checked against an allow list, EDITABLE_USER_FIELDS, in settings.py.  I don't know enough about the Django user model to be sure that this would be good enough in a production setting, but I think it's good enough for a class project.
+
 ### Resisting scope creep
 There are some features that I did not include because they are not needed to meet my spec, but that I'd recommend adding to the requirements if I were building this for a client.
 
@@ -93,6 +124,14 @@ of scope for the final project:  it sounds like a quick addition, but we'd also 
 In several functions, I chose to pass the user as a separate parameter instead of using request.user.  This is not needed for the features in my final project spec, but it leaves open the door for some future enhancements where the user we're interested in isn't necessarily the current user.  Ex: allowing a parent to register along with a child, or allowing an admin to view orders in the front end.
 
 
+### CSRF - TO DO.
+
+We have been told that it is okay to use @csrf_except for our projects so BLAH.
+(If I keep it:)
+I decided to include CSRF on the form in index.html that takes the user to the checkout preview screen.  I wasn't sure if that's needed on a GET request, but I decided to include it after reading this thread:
+https://security.stackexchange.com/q/115794
+
+Even though it is a GET request, it does actually impact data, since the cart validation process removes any invalid line items.  There's no harm in that happening even via XSS, but it could confuse a user if line items disappear and they don't see the error message.
 
 
 ## DEPENDENCIES:

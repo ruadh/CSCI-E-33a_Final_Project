@@ -39,7 +39,7 @@
                     <p><span class="label">Total:</span>  ${{cart.total|default_if_none:"0.00"}}</p>
                     <form action="{% url 'order' cart.id %}" method="GET" class="">
                         {% csrf_token %}
-                        <input type="submit" class="btn btn-primary link-as-button">
+                        <input type="submit" value="Checkout" class="btn btn-primary link-as-button">
                     </form>
                 {% else %}
                     <h4>No items in your cart.</h4>

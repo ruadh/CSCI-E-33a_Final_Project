@@ -91,8 +91,8 @@ function removeFromCart(id) {
 
 
 /**
-* Replace editable profile values with form fields
-*/
+ * Replace editable profile values with form fields
+ */
 
 // TO DO:  write about dependency that element must be value inside editable
 
@@ -125,12 +125,10 @@ function profileForm() {
 
 
 /**
-* Save the edit profile form
-*/
+ * Save the edit profile form
+ */
 
 function saveProfile(id) {
-
-  alert(`saveProfile ${id}`);
 
   //  TO DO:  Get the token
   // Gather the CSRF token from the Django template
@@ -143,69 +141,92 @@ function saveProfile(id) {
   const saveButton = document.querySelector('#save-profile-button');
   saveButton.disabled = true;
 
-  // TO DO:  Bundle the pseudo-form values to pass
+  // Bundle the pseudo-form values to pass
   const body = {};
   const fieldsList = document.querySelectorAll('.editable .value');
+  let errorCt = 0;
   fieldsList.forEach(field => {
-    // TO DO: Add if not empty
-    body[field.id] = field.value;
+    // Make sure the value is not empty, then add the key/value pair  (consider further validation in future)
+    if (field.value == '') {
+      errorCt++;
+    } else {
+      body[field.id] = field.value;
+    }
   })
 
-  // alert(JSON.stringify(body));
+  if (errorCt == 0) {
 
-  // Update the profile's contents via the API
-  fetch(`/users/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(body),
-    // headers: {
-    //   'X-CSRFToken': token
-    // }
-  })
-    .then(response => response.json())
-    .then(profile => {
-
-
-      // If successful, update the page
-      if (profile.error == undefined) {
-
-        alert('JS - success');
-
-        // // TO DO:  Replace the pseudo-form with the updated profile contents
-        // const contents = document.querySelector(`.post-row[data-post="${id}"] .post-content`);
-        // contents.innerHTML = post.content;
-
-        // Replace the save button with an edit button
-        swapProfileButtons('save', 'edit');
-
-        // Reenable the submit cart button, if present  (Again: using querySelectorAll to gracefully handle missing elements)
-        document.querySelectorAll('#submit-cart-button').forEach(button => {
-          button.removeAttribute('disabled')
-        });
+    // Update the profile's contents via the API
+    fetch(`/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+      // headers: {
+      //   'X-CSRFToken': token
+      // }
+    })
+      .then(response => response.json())
+      .then(profile => {
 
 
-      } else {
-        // TO DO:  Display an alert above the post
-        // DESIGN NOTE:  I'm repeating a queryselector, but I think that's better than storing the object,
-        //               since this block will not usually be executed - only if there's an error.
-        // displayAlert(document.querySelector(`.post-row[data-post="${id}"] .alert`), post.error, 'danger');
+        // If successful, update the page
+        if (profile.error == undefined) {
 
-        alert(`ERROR: ${profile.error}`);
+          // Replace the pseudo-form with the updated profile contents
+          // CITATION: https://stackoverflow.com/a/34913701/15100723
+          for (const [fieldName, fieldValue] of Object.entries(profile)) {
 
-        // Reenable the save button, so the user can try again
-        saveButton.disabled = false;
+            // TO DO:  Refactor to use helper function?
+            // Replace the contents of each input with its updated value, as returned from the API
+            const input = document.querySelector(`#${fieldName}`);
+            const child = document.createElement('span');
+            child.id = fieldName;
+            child.classList.add('value');
+            child.innerHTML = fieldValue;
+            input.after(child);
+            input.remove();
 
-      }
+          }
 
-    });
+          // Replace the save button with an edit button
+          swapProfileButtons('save', 'edit');
+
+          // Reenable the submit cart button, if present  (Again: using querySelectorAll to gracefully handle missing elements)
+          document.querySelectorAll('#submit-cart-button').forEach(button => {
+            button.removeAttribute('disabled')
+          });
+
+
+        } else {
+          // TO DO:  Display an alert above the post
+          // DESIGN NOTE:  I'm repeating a queryselector, but I think that's better than storing the object,
+          //               since this block will not usually be executed - only if there's an error.
+          // displayAlert(document.querySelector(`.post-row[data-post="${id}"] .alert`), post.error, 'danger');
+
+          alert(`ERROR: ${profile.error}`);
+
+          // Reenable the save button, so the user can try again
+          saveButton.disabled = false;
+
+        }
+
+      });
+
+  } else {
+    alert('all fields are required');
+    // Reenable the save button, so the user can try again
+    saveButton.disabled = false;
+  }
+
+
 
 }
 
 
 /**
-* Helper function:  Swap the Edit Profile and Save Profile buttons
+ * Helper function:  Swap the Edit Profile and Save Profile buttons
  * @param {string} from - the button type to be removed, either 'edit' or 'save' in lowercase
  * @param {string} to - the button type to be added, either 'edit' or 'save' in lowercase
-*/
+ */
 
 function swapProfileButtons(from, to) {
 
@@ -228,9 +249,3 @@ function swapProfileButtons(from, to) {
   oldButton.remove();
 
 }
-
-
-
-
-
-

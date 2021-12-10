@@ -138,6 +138,19 @@ WEEKDAYS = (
        (6, 'Sunday'),
    )
 
+# Fields allowed to be edited by the profile update form
+
+EDITABLE_USER_FIELDS = [
+    'first_name',
+    'last_name',
+    'email',
+    'phone',
+    'emergency_first',
+    'emergency_last',
+    'emergency_email',
+    'emergency_phone'
+]
+
 # TO DO:  Replace this with a more realistic size
 PAGE_SIZE = 5
 
