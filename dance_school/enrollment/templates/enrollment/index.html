@@ -78,13 +78,8 @@
                         <h5>Register Now</h5>
                         <p><span class="label">Price:  </span>${{offering.price}}</p>
                         <p><span class="label">{{offering.num_weeks}} Weeks:  </span>{{offering.offering_dates_text}}</p>
-                        <p><span class="label">{{offering.num_weeks}} Weeks:  </span>
-                            {% for date in offering.offering_dates %}
-                                {{date|date:"n/j"}}{% if not forloop.last %}, {% endif %}
-                            {% endfor %}
-                        </p>
                         {% if offering.no_class_dates %}
-                            <p><span class="label">No Class:  </span>{{offering.no_class_dates}}</p>
+                            <p><span class="label">No Class:  </span>{{offering.no_class_dates_text}}</p>
                         {% endif %}
                         {% if offering.semester.registration_status == 'future' %}
                             <p>Registration for this class will open on {{offering.semester.registration_open|date:DATE_TIME_FORMAT}}</p>

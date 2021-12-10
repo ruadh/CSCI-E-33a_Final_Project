@@ -86,8 +86,9 @@ I *think* it may be also be better for querying:  if we are trying to find out i
 #### Calculating vs. storing offering dates
 TO DO:  explain
 
-#### Formatting and parsing dates in the template vs. doing it in the back-end and passing the string
-TO DO:  technically passing the actual date objects lets us do date-aware stuff.  Not sure about performance, though
+#### Where to format and parse date lists
+Formatting and parsing dates in the template vs. doing it in the back-end and passing the string
+TO DO:  technically passing the actual date objects lets us do date-aware stuff.  Not sure about performance, though.  Readability sucks, which is why I passed the string.
 
 ### Passing the request
 A lot of my functions take request as a parameter when it isn't required for the functionality, because it supports @login_required.  ex:  get_cart could doesn't need the request (we could require that the user argument instead of providing a default), but unauthenticated users should not be able to get order data.

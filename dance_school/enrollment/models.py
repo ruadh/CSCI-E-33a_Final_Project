@@ -196,6 +196,11 @@ class Offering(models.Model):
         # CITATION:  https://stackoverflow.com/a/8722486/15100723
         return ", ".join(date.strftime("%-m/%-d") for date in self.offering_dates)
 
+    @property
+    def no_class_dates_text(self):
+        # CITATION:  https://stackoverflow.com/a/8722486/15100723
+        return ", ".join(date.strftime("%-m/%-d") for date in self.no_class_dates)
+
     # CITATION:  https://stackoverflow.com/a/54011108
     def clean(self):
         # Clean is applied before required fields are checked, so we have to double-check here
