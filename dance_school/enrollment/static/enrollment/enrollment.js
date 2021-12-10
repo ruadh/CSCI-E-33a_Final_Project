@@ -111,12 +111,7 @@ function profileForm() {
   document.querySelectorAll('.editable .value').forEach(field => {
     const fieldValue = field.innerHTML;
     field.innerHTML = '';
-    const child = document.createElement('input');
-    child.id = field.id;
-    child.classList.add('value');
-    child.value = fieldValue;
-    field.after(child);
-    field.remove();
+    const child = newElement('input', null, 'value', field.id, fieldValue, field)
   })
 
   // Replace the edit button with a Save button
@@ -147,10 +142,10 @@ function saveProfile(id) {
   let errorCt = 0;
   fieldsList.forEach(field => {
     // Make sure the value is not empty, then add the key/value pair  (consider further validation in future)
-    if (field.value == '') {
+    if (field.value.trim() == '') {
       errorCt++;
     } else {
-      body[field.id] = field.value;
+      body[field.id] = field.value.trim();
     }
   })
 
@@ -178,12 +173,7 @@ function saveProfile(id) {
             // TO DO:  Refactor to use helper function?
             // Replace the contents of each input with its updated value, as returned from the API
             const input = document.querySelector(`#${fieldName}`);
-            const child = document.createElement('span');
-            child.id = fieldName;
-            child.classList.add('value');
-            child.innerHTML = fieldValue;
-            input.after(child);
-            input.remove();
+            const child = newElement('span', fieldValue, 'value', fieldName, null, input)
 
           }
 
@@ -223,6 +213,42 @@ function saveProfile(id) {
 
 
 /**
+ * Create a new HTML element with the specified attributes
+ * @param {string} element - The type of HTML element to be created
+ * @param {string} innerHTML - The inner HTML to be added to the new element
+ * @param {string} [cssClass] - A space-delimited list of classes to be added to the new element (optional)
+ * @param {string} id - the ID to be added to the element (optional)
+ * @param {string} value - the value to be set for the element (optional)
+ * @param {object} replaces - the DOM object it should replace (optional)
+ * 
+ * NOTE: It would also be useful to support adding the event listeners here,
+ * but passing a function with an unknown number of parameters is beyond my skills right now.
+ */
+
+function newElement(element, innerHTML, cssClass = null, id = null, value = null, replaces = null) {
+  const child = document.createElement(element);
+  child.innerHTML = innerHTML;
+  if (cssClass !== null) {
+    cssClass.split(' ').forEach(cssClass => {
+      child.classList.add(cssClass);
+    });
+    if (id !== null) {
+      child.id = id;
+    };
+    if (value !== null) {
+      child.value = value;
+    };
+    if (replaces !== null) {
+      replaces.after(child);
+      replaces.remove();
+    };
+  }
+  return child;
+}
+
+
+
+/**
  * Helper function:  Swap the Edit Profile and Save Profile buttons
  * @param {string} from - the button type to be removed, either 'edit' or 'save' in lowercase
  * @param {string} to - the button type to be added, either 'edit' or 'save' in lowercase
@@ -244,7 +270,11 @@ function swapProfileButtons(from, to) {
   newButton.dataset.profile = oldButton.dataset.profile;
   // CITATION:  https://flaviocopes.com/how-to-uppercase-first-letter-javascript/
   newButton.innerHTML = `${to.charAt(0).toUpperCase()}${to.slice(1)}`;
-  newButton.addEventListener('click', () => saveProfile(oldButton.dataset.profile));
+  if (to == 'save'){
+    newButton.addEventListener('click', () => saveProfile(oldButton.dataset.profile));
+  } else {
+    newButton.addEventListener('click', () => profileForm(oldButton.dataset.profile));
+  }
   oldButton.after(newButton);
   oldButton.remove();
 

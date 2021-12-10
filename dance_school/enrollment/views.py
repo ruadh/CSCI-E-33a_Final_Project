@@ -64,6 +64,7 @@ def login_view(request):
 def logout_view(request):
 
     logout(request)
+    timezone.activate(settings.DEFAULT_TIMEZONE)
     return HttpResponseRedirect(reverse('index'))
 
 
@@ -75,9 +76,10 @@ def register(request):
     if request.method == 'POST':
 
         # Ensure password matches confirmation
-        username = request.POST['username']
-        password = request.POST['password']
-        confirmation = request.POST['confirmation']
+        # NOTE:  I think Django trims whitespace from these, but trim anyway to be safe
+        username = request.POST['username'].strip()
+        password = request.POST['password'].strip()
+        confirmation = request.POST['confirmation'].strip()
         if password != confirmation:
             return render(request, 'enrollment/register.html', {
                 'message': 'Passwords must match.',
@@ -88,14 +90,14 @@ def register(request):
             })
 
         # Check for required fields
-        first = request.POST['first-name']
-        last = request.POST['last-name']
-        email = request.POST['email']
-        phone = request.POST['phone']
-        emergency_first = request.POST['emergency-first-name']
-        emergency_last = request.POST['emergency-last-name']
-        emergency_email = request.POST['emergency-email']
-        emergency_phone = request.POST['emergency-phone']
+        first = request.POST['first-name'].strip()
+        last = request.POST['last-name'].strip()
+        email = request.POST['email'].strip()
+        phone = request.POST['phone'].strip()
+        emergency_first = request.POST['emergency-first-name'].strip()
+        emergency_last = request.POST['emergency-last-name'].strip()
+        emergency_email = request.POST['emergency-email'].strip()
+        emergency_phone = request.POST['emergency-phone'].strip()
         # accept_terms = request.POST['accept-terms']
         accept_terms = request.POST.get('accept-terms', '') == 'on'
 
@@ -133,8 +135,10 @@ def register(request):
                 'message': 'Something else went wrong.',
             })
         login(request, user)
+        timezone.activate(user.timezone)
         return HttpResponseRedirect(reverse('profile', args=[user.id]))
     else:
+        timezone.activate(settings.DEFAULT_TIMEZONE)
         return render(request, 'enrollment/register.html')
 
 
@@ -158,6 +162,11 @@ def index(request, page=None, message=None):
 
     # Pass the latest semester to the template
     semester = latest_semester()
+
+    if request.user.is_authenticated:
+        timezone.activate(request.user.timezone)
+    else:
+        timezone.activate(settings.DEFAULT_TIMEZONE)
 
     return render(request, 'enrollment/index.html', {
         'page': page,

@@ -158,7 +158,8 @@ PAGE_SIZE = 5
 # NOTE:  These must also be added to context_processors.py to be used by Django templates and/or JavaScript
 
 # System's default display timezone 
-DEFAULT_TIMEZONE = 'America/New_York'
+# DEFAULT_TIMEZONE = 'America/New_York'
+DEFAULT_TIMEZONE = 'America/Chicago'
 
 # Date and time format
 DATE_TIME_FORMAT = 'F jS \\a\\t P'
