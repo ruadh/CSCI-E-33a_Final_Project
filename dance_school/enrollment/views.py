@@ -13,13 +13,13 @@ from django.conf import settings
 # from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.core.paginator import Paginator
-from django.db import IntegrityError, close_old_connections
+from django.db import IntegrityError
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
 # from django import forms
-from django.views.decorators.csrf import csrf_exempt
+# from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Count
 from markdown2 import Markdown
 
@@ -177,8 +177,6 @@ def index(request, page=None, message=None):
 
 
 @login_required
-# TO DO:  add CSRF handling on the PUT
-@csrf_exempt
 def profile(request, id):
     if request.method == 'PUT':
         try:
@@ -407,8 +405,6 @@ def validate_item(request, offering, user, action):
 
 # Add or remove a line item in the cart
 @login_required
-# TO DO:  Add CSRF handling
-@csrf_exempt
 def update_cart(request, id):
     if request.method == 'POST':
         try:
@@ -452,9 +448,7 @@ def update_cart(request, id):
 
 # Validate the cart and remove any invalid items
 @login_required
-# TO DO:  ADD CSRF HANDLING
 # TO DO:  Note that ID is the order ID
-@csrf_exempt
 def validate_checkout(request, id):
     try:
         cart = Order.objects.get(pk=id)
@@ -496,7 +490,6 @@ def validate_checkout(request, id):
 
 # Validate payment
 @login_required
-@csrf_exempt
 def pay(request):
     if request.method == 'POST':
         form = GiftCardForm(request.POST)
@@ -533,8 +526,6 @@ def authorized_get_profile(request, id):
 
 # Preview, submit, or view completed cart
 @login_required
-# TO DO:  Add CSRF support
-@csrf_exempt
 def checkout(request, id):
 
     # Default behavior:  no payment form or update profile pseudo-form (Will be added below if needed)

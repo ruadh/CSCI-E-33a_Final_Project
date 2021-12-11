@@ -10,6 +10,10 @@
     {% if profile %}
     <div id="profile-view" class="col-md">
         <h2>User Profile <button id="edit-profile-button" data-profile={{profile.id}}>Edit</button></h2>
+        <!-- From is here to provide the CSRF token -->
+        <form>
+            {% csrf_token %}
+        </form>
         
         <div class="card">
             <div class="card-body">

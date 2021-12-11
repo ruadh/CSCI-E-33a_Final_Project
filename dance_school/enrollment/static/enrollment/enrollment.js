@@ -22,22 +22,21 @@ document.addEventListener('DOMContentLoaded', function () {
  */
 
 function addToCart(id) {
-  // alert(id);
 
   // Disable the button the user just clicked on, so they can't click repeatedly while waiting
   const addButton = document.querySelector(`.add-button[data-offering="${id}"]`);
   addButton.disabled = true;
-  // alert(id);
 
-  // TO DO:  CSRF
   // Gather the CSRF token from the Django template
   // CITATION:  Copied directly from Vlad's section slides
-  // const token = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
-
+  const token = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
 
   // Add the offering to the cart via the API
   fetch(`/cart/${id}`, {
-    method: 'POST'
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': token
+    }
   })
     .then(response => response.json())
     .then(lineItem => {
@@ -67,9 +66,16 @@ function removeFromCart(id) {
   const removeButton = document.querySelector(`.remove-button[data-item="${id}"]`);
   removeButton.disabled = true;
 
+  // Gather the CSRF token from the Django template
+  // CITATION:  Copied directly from Vlad's section slides
+  const token = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+
   // Add the offering to the cart via the API
   fetch(`/cart/${id}`, {
-    method: 'DELETE'
+    method: 'DELETE',
+    headers: {
+      'X-CSRFToken': token
+    }
   })
     .then(response => response.json())
     .then(lineItem => {
@@ -125,12 +131,9 @@ function profileForm() {
 
 function saveProfile(id) {
 
-  //  TO DO:  Get the token
   // Gather the CSRF token from the Django template
   // CITATION:  Copied directly from Vlad's section slides
-  // const token = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
-
-  // alert(token);
+  const token = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
 
   // Disable the button the user just clicked on, so they can't click repeatedly while waiting
   const saveButton = document.querySelector('#save-profile-button');
@@ -155,9 +158,9 @@ function saveProfile(id) {
     fetch(`/users/${id}`, {
       method: 'PUT',
       body: JSON.stringify(body),
-      // headers: {
-      //   'X-CSRFToken': token
-      // }
+      headers: {
+        'X-CSRFToken': token
+      }
     })
       .then(response => response.json())
       .then(profile => {
@@ -270,7 +273,7 @@ function swapProfileButtons(from, to) {
   newButton.dataset.profile = oldButton.dataset.profile;
   // CITATION:  https://flaviocopes.com/how-to-uppercase-first-letter-javascript/
   newButton.innerHTML = `${to.charAt(0).toUpperCase()}${to.slice(1)}`;
-  if (to == 'save'){
+  if (to == 'save') {
     newButton.addEventListener('click', () => saveProfile(oldButton.dataset.profile));
   } else {
     newButton.addEventListener('click', () => profileForm(oldButton.dataset.profile));

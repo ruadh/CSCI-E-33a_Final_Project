@@ -37,16 +37,23 @@
                     <p><span class="label">Subtotal:</span>  ${{cart.subtotal|default_if_none:"0.00"}}</p>
                     <p><span class="label">Discounts: </span> ${{cart.discount|default_if_none:"0.00"}}</p>
                     <p><span class="label">Total:</span>  ${{cart.total|default_if_none:"0.00"}}</p>
-                    <form action="{% url 'order' cart.id %}" method="GET" class="">
-                        {% csrf_token %}
-                        <input type="submit" value="Checkout" class="btn btn-primary link-as-button">
-                    </form>
                 {% else %}
                     <h4>No items in your cart.</h4>
                 {% endif %}
             {% else %}
                 <h4>No items in your cart.</h4>
             {% endif %}
+            <!-- Include the form to supply the CSRF token, but hide the Checkout button if there are no items -->
+            <form action="
+                {% if cart %} 
+                    {% url 'order' cart.id %}
+                {% endif %}
+            " method="GET" class="">
+                {% csrf_token %}
+                {% if cart.items %}
+                    <input type="submit" value="Checkout" class="btn btn-primary link-as-button">
+                {% endif %}
+            </form>
         </div>
     </div>
 
