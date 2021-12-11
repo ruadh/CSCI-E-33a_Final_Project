@@ -34,6 +34,7 @@ form input[type="submit"] {
 /* Accordion expand/collapse button/links */
 .card-header .btn-link {
     font-size: 1.25rem;
+    padding-left: 0;
 }
 
 

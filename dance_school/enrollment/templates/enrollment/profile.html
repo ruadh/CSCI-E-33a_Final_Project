@@ -14,62 +14,96 @@
         <form>
             {% csrf_token %}
         </form>
-        
-        <div class="card">
-            <div class="card-body">
-                <h3 class="card-title">Account</h3>
-                <div>
-                    <span class="label">Username:</span> <span class="value">{{profile.username}}</span>
+        <div class="accordion" id="profile-accordion">
+
+            <div class="card" data-section="account">
+                <div class="card-header" id="heading-account">
+                    <h3 class="mb-0">
+                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse-account" aria-expanded="true" aria-controls="collapse-account">
+                            Account
+                        </button>
+                    </h3>
                 </div>
-                <div>
-                    <span class="label">Password:</span> <span class="value">****************</span>
+                <div id="collapse-account" class="collapse show" aria-labelledby="heading-account" data-parent="#profile-accordion">
+                    <div class="card-body">
+                        <div>
+                            <span class="label">Username:</span> <span class="value">{{profile.username}}</span>
+                        </div>
+                        <div>
+                            <span class="label">Password:</span> <span class="value">****************</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="card">
-            <div class="card-body editable">
-                <h3 class="card-title">About Me</h3>
-                <div>
-                    <span class="label">First Name:</span> <span class="value" id="first-name">{{profile.first_name}}</span>
+            <div class="card" data-section="about-me">
+                <div class="card-header" id="heading-about-me">
+                    <h3 class="mb-0">
+                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse-about-me" aria-expanded="true" aria-controls="collapse-about-me">
+                            About Me
+                        </button>
+                    </h3>
                 </div>
-                <div>    
-                    <span class="label">Last Name:</span> <span class="value" id="last-name">{{profile.last_name}}</span>
-                </div>
-                <div>
-                    <span class="label">Email:</span> <span class="value" id="email">{{profile.email}}</span>
-                </div>
-                <div>
-                    <span class="label">Phone:</span> <span class="value" id="phone">{{profile.phone}}</span>
+                <div id="collapse-about-me" class="collapse show" aria-labelledby="heading-about-me" data-parent="#profile-accordion">
+                    <div class="card-body editable">
+                        <div>
+                            <span class="label">First Name:</span> <span class="value" id="first-name">{{profile.first_name}}</span>
+                        </div>
+                        <div>    
+                            <span class="label">Last Name:</span> <span class="value" id="last-name">{{profile.last_name}}</span>
+                        </div>
+                        <div>
+                            <span class="label">Email:</span> <span class="value" id="email">{{profile.email}}</span>
+                        </div>
+                        <div>
+                            <span class="label">Phone:</span> <span class="value" id="phone">{{profile.phone}}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="card">
-            <div class="card-body editable">
-                <h3 class="card-title">Emergency Contact</h3>
-                <div>
-                    <span class="label">First Name:</span> <span class="value" id="emergency-first">{{profile.emergency_first}}</span>
+            <div class="card" data-section="emergency-contact">
+                <div class="card-header" id="heading-emergency-contact">
+                    <h3 class="mb-0">
+                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse-emergency-contact" aria-expanded="true" aria-controls="collapse-emergency-contact">
+                            Emergency Contact
+                        </button>
+                    </h3>
                 </div>
-                <div>
-                    <span class="label">Last Name:</span> <span class="value" id="emergency-last">{{profile.emergency_last}}</span>
-                </div>
-                <div>
-                    <span class="label">Email:</span> <span class="value" id="emergency-email">{{profile.emergency_email}}</span>
-                </div>
-                <div>
-                    <span class="label">Phone:</span> <span class="value" id="emergency-phone">{{profile.emergency_phone}}</span>
+                <div id="collapse-emergency-contact" class="collapse show" aria-labelledby="heading-emergency-contact" data-parent="#profile-accordion">
+                    <div class="card-body editable">
+                        <div>
+                            <span class="label">First Name:</span> <span class="value" id="emergency-first">{{profile.emergency_first}}</span>
+                        </div>
+                        <div>
+                            <span class="label">Last Name:</span> <span class="value" id="emergency-last">{{profile.emergency_last}}</span>
+                        </div>
+                        <div>
+                            <span class="label">Email:</span> <span class="value" id="emergency-email">{{profile.emergency_email}}</span>
+                        </div>
+                        <div>
+                            <span class="label">Phone:</span> <span class="value" id="emergency-phone">{{profile.emergency_phone}}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="card">
-            <div class="card-body">
-                <h3 class="card-title">Administrative</h3>
-                <div>
-                    <span class="label">Account created on:</span> <span class="value">{{profile.date_joined}}</span>
+            <div class="card" data-section="administrative">
+                <div class="card-header" id="heading-administrative">
+                    <h3 class="mb-0">
+                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse-administrative" aria-expanded="true" aria-controls="collapse-administrative">
+                            Administrative
+                        </button>
+                    </h3>
                 </div>
-                    <div><span class="label">Accepted class policies on:</span> <span class="value">{{profile.accept_terms}}</span>
+                <div id="collapse-administrative" class="collapse show" aria-labelledby="heading-administrative" data-parent="#profile-accordion">
+                    <div class="card-body">
+                        <div>
+                            <span class="label">Account created on:</span> <span class="value">{{profile.date_joined}}</span>
+                        </div>
+                            <div><span class="label">Accepted class policies on:</span> <span class="value">{{profile.accept_terms}}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
