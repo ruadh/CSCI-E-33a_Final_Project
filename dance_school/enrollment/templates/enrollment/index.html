@@ -103,7 +103,11 @@
                             <p>Registration for this semester has closed.</p>
                         {% else %}
                             <p>{{offering.spots_left}} of {{offering.capacity}} spots remaining.</p>
-                            <button class="btn btn-primary add-button" data-offering={{offering.id}}>Add to Cart</button>
+                            {% if user.is_authenticated %}
+                                <button class="btn btn-primary add-button" data-offering={{offering.id}}>Add to Cart</button>
+                            {% else %}
+                                You must <a href="{% url 'login' %}">log in</a> or <a href="{% url 'register' %}">create an account</a> to register for classes.
+                            {% endif %}
                         {% endif %}
                     </div>
                 </div>
