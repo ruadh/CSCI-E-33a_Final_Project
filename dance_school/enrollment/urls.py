@@ -11,15 +11,11 @@ urlpatterns = [
 
     # Navigation
     path('', views.index, name='index'),
-    # path('posts', views.save_post, name='new_post'),
-    # path('following', views.following_posts, name='following'),
-    path('users/<int:id>', views.profile, name='profile'),
+    path('profile/<int:id>', views.profile_view, name='view_profile'),
     path('contact-sheet/<int:id>', views.contact_sheet, name='contact_sheet'),
-    # path('offerings/<int:id>', views.view_offering, name='view_offering'),
 
-    # # API
+    # API
+    path('users/<int:id>', views.profile, name='profile'),
     path('cart/<int:id>', views.update_cart, name='update_cart'),
     path('order/<int:id>', views.checkout, name='order'),
-    # path('likes/<int:id>', views.toggle_like, name='toggle_like'),
-    # path('follows/<int:id>', views.toggle_follow, name='toggle_follow'),
 ]

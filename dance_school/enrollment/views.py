@@ -26,10 +26,12 @@ class GiftCardForm(forms.Form):
     month = forms.CharField(required=True, strip=True)
     year = forms.CharField(required=True, strip=True)
     pin = forms.CharField(required=True, strip=True, label='PIN')
-    total = forms.DecimalField(max_digits=6, decimal_places=2, required=True, widget=forms.HiddenInput)
+    total = forms.DecimalField(
+        max_digits=6, decimal_places=2, required=True, widget=forms.HiddenInput)
 
 # AUTHENTICATION
 # CITATION:  Adapted from provided starter files in earlier projects
+
 
 def login_view(request):
 
@@ -163,41 +165,15 @@ def index(request, page=None, message=None):
 
     return render(request, 'enrollment/index.html', {
         'page': page,
-        'cart': cart,                                         
+        'cart': cart,
         'message': message,
         'semester': semester
     })
 
 
 @login_required
-def profile(request, id):
-    if request.method == 'PUT':
-        try:
-            user = User.objects.get(pk=id)
-        except User.DoesNotExist:
-            return JsonResponse({'error': 'User not found.'}, status=404)
-        
-        # Don't allow non-staff users to edit other's profiles
-        if request.user != user and not request.user.is_staff:
-            return JsonResponse({'error': 'You are not authorized to edit this profile.'}, status=400)
-
-        # Convert the passed JSON into a Python dictionary
-        body = json.loads(request.body)
-        
-        # Update each of the fields that were passed, if on the allow list
-        for field in body:
-            # NOTE: model fields use underscores, while HTML elements use dashes
-            field_name = field.replace('-', '_')
-            if field_name in settings.EDITABLE_USER_FIELDS:
-                field_value = body.get(field).strip()
-                # CITATION: https://www.programiz.com/python-programming/methods/built-in/setattr
-                setattr(user, field_name, field_value)
-        user.save()
-
-        # Return the updated profile's editable fields
-        return JsonResponse(user.serialize_editable(), status=200)    
-
-    elif request.method == 'GET':
+def profile_view(request, id):
+    if request.method == 'GET':
         # Non-admin users may only view their own profiles
         if request.user.id == id or request.user.is_staff:
             try:
@@ -209,10 +185,9 @@ def profile(request, id):
                 })
 
             # Prepare the items to pass to the Django template:
-            # CITATION:  Passing nested context items:  https://stackoverflow.com/q/6540032
 
             # Pass the students' completed enrollments, grouped by semester
-            # Find all semesters in which the student has completed orders
+            # CITATION:  Passing nested context items:  https://stackoverflow.com/q/6540032
             semesters = Semester.objects.filter(
                 offerings__line_items__order__student=id, offerings__line_items__order__completed__isnull=False).order_by('-start_date').distinct()
             for semester in semesters:
@@ -236,9 +211,45 @@ def profile(request, id):
             })
     else:
         return render(request, 'enrollment/profile.html', {
-                'orders': None,
-                'message': 'PUT or GET method required'
-            })
+            'orders': None,
+            'message': 'GET method required'
+        })
+
+
+# API access to profiles
+@login_required
+def profile(request, id):
+    if request.method != 'POST' and request.method != 'GET':
+        return JsonResponse({'error': 'GET or POST method required.'}, status=400)
+    else:
+        try:
+            user = User.objects.get(pk=id)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User not found.'}, status=404)
+
+        # Don't allow non-staff users to edit other's profiles
+        if request.user != user and not request.user.is_staff:
+            return JsonResponse({'error': 'You are not authorized to access this profile.'}, status=400)
+
+        # If we're posting, make the changes
+        if request.method == 'POST':
+
+            # Convert the passed JSON into a Python dictionary
+            body = json.loads(request.body)
+
+            # Update each of the fields that were passed, if on the allow list
+            for field in body:
+                # NOTE: model fields use underscores, while HTML elements use dashes
+                field_name = field.replace('-', '_')
+                if field_name in settings.EDITABLE_USER_FIELDS:
+                    field_value = body.get(field).strip()
+                    # CITATION: https://www.programiz.com/python-programming/methods/built-in/setattr
+                    setattr(user, field_name, field_value)
+            user.save()
+
+        # Return the updated profile's editable fields
+        return JsonResponse(user.serialize_editable(), status=200)            
+
 
 
 @login_required
@@ -319,8 +330,8 @@ def completed_orders(request, user):
 def get_cart(request, user=None, add=False):
 
     # Default to the logged-in user
-    if user==None:
-        user=request.user
+    if user == None:
+        user = request.user
     try:
         cart = Order.objects.get(student=user, completed=None)
         # cart = Order.objects.get(student=request.user, completed=None)
@@ -341,10 +352,10 @@ def get_cart(request, user=None, add=False):
 @login_required
 def merge_carts(request, user=None):
     # Default to the requestor
-    if user==None:
-        user=request.user
+    if user == None:
+        user = request.user
     # Only staff can merge other users' carts
-    if request.user!=user and not request.user.is_staff:
+    if request.user != user and not request.user.is_staff:
         return None
     # This should only be called when multiple carts are present, but double-check anyway
     try:
@@ -357,7 +368,8 @@ def merge_carts(request, user=None):
         # Select a primary cart
         primary = carts.first()
         # Reassign any line items to the first cart
-        line_items = LineItem.objects.filter(order__student=user, order__completed=None).exclude(order=primary)
+        line_items = LineItem.objects.filter(
+            order__student=user, order__completed=None).exclude(order=primary)
         for line_item in line_items:
             line_item.order = primary
             line_item.save()
@@ -393,7 +405,6 @@ def validate_item(request, offering, user, action):
     return error
 
 
-
 # API
 
 # Add or remove a line item in the cart
@@ -424,7 +435,7 @@ def update_cart(request, id):
 
         return JsonResponse(line_item.serialize(), status=200)
     elif request.method == 'DELETE':
-        try: 
+        try:
             line_item = LineItem.objects.get(id=id)
         except LineItem.DoesNotExist:
             return JsonResponse({'error': f'Line Item {id} not found'}, status=400)
@@ -461,11 +472,12 @@ def validate_checkout(request, id):
         line_items = LineItem.objects.filter(order=id)
     except LineItem.DoesNotExist:
         return f'Cart {cart.id} is empty.'
-    
+
     # Validate each line item again, removing any invalid items from the cart
     removed_list = []
     for line_item in line_items:
-        error = validate_item(request, line_item.offering, cart.student, 'checkout')
+        error = validate_item(request, line_item.offering,
+                              cart.student, 'checkout')
         if error != None:
             # Track a list of items and errors for the message
             removed_list.append(f'{line_item.offering.course.title}: {error}')
@@ -477,7 +489,7 @@ def validate_checkout(request, id):
     if removed_ct > 0:
         removed_list_delimited = '\n'.join(removed_list)
         return f'{removed_ct} item{"" if removed_ct == 1 else "s"} removed from cart: \n{removed_list_delimited}'
-    
+
     return None
 
 
@@ -487,8 +499,9 @@ def pay(request):
     if request.method == 'POST':
         form = GiftCardForm(request.POST)
         if form.is_valid():
-            try: 
-                card = GiftCard.objects.get(card_number=form.cleaned_data['card_number'], month=form.cleaned_data['month'], year=form.cleaned_data['year'], pin=form.cleaned_data['pin'])
+            try:
+                card = GiftCard.objects.get(
+                    card_number=form.cleaned_data['card_number'], month=form.cleaned_data['month'], year=form.cleaned_data['year'], pin=form.cleaned_data['pin'])
             except GiftCard.DoesNotExist:
                 return False
 
@@ -503,6 +516,8 @@ def pay(request):
                 return True
 
 # Helper function:  Get profile only if you are its owner or a staff user
+
+
 @login_required
 def authorized_get_profile(request, id):
     try:
@@ -537,7 +552,7 @@ def checkout(request, id):
     else:
 
         if request.method == 'GET':
-            # If the cart isn't completed, validate the items, then load the preview with a payment form and profile 
+            # If the cart isn't completed, validate the items, then load the preview with a payment form and profile
             if cart.completed == None:
                 message = validate_checkout(request, id)
                 if cart.student != request.user:
@@ -562,7 +577,7 @@ def checkout(request, id):
                 if paid:
                     cart.completed = datetime.now(timezone.utc)
                     cart.save()
-                    message = 'Thank you for your order.' 
+                    message = 'Thank you for your order.'
                 else:
                     payment_form = GiftCardForm(initial={'total': cart.total})
                     profile = authorized_get_profile(request, cart.student.id)
@@ -582,4 +597,3 @@ def checkout(request, id):
             'payment_form': payment_form,
             'profile': profile
         })
-    

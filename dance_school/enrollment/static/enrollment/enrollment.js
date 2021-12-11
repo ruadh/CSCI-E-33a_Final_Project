@@ -135,9 +135,12 @@ function saveProfile(id) {
   // CITATION:  Copied directly from Vlad's section slides
   const token = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
 
-  // Disable the button the user just clicked on, so they can't click repeatedly while waiting
+  // Disable the cancel and save buttons, so they can't click repeatedly while waiting
   const saveButton = document.querySelector('#save-profile-button');
   saveButton.disabled = true;
+  const cancelButton = document.querySelector('#cancel-button');
+  cancelButton.disabled = true;
+
 
   // Bundle the pseudo-form values to pass
   const body = {};
@@ -156,7 +159,7 @@ function saveProfile(id) {
 
     // Update the profile's contents via the API
     fetch(`/users/${id}`, {
-      method: 'PUT',
+      method: 'POST',
       body: JSON.stringify(body),
       headers: {
         'X-CSRFToken': token
@@ -197,8 +200,9 @@ function saveProfile(id) {
 
           alert(`ERROR: ${profile.error}`);
 
-          // Reenable the save button, so the user can try again
+          // Reenable the save and cancel buttons, so the user can try again
           saveButton.disabled = false;
+          cancelButton.disabled = false;
 
         }
 
@@ -210,6 +214,67 @@ function saveProfile(id) {
     saveButton.disabled = false;
   }
 
+
+
+}
+
+/**
+ * Cancel profile edits and restore the original values
+ */
+
+function cancelProfile(id) {
+
+  // Disable the save and cancel buttons, so they can't click repeatedly while waiting
+  const saveButton = document.querySelector('#save-profile-button');
+  saveButton.disabled = true;
+  const cancelButton = document.querySelector('#cancel-button');
+  cancelButton.disabled = true;
+
+  // Get the profile's original contents via the API
+  fetch(`/users/${id}`, {
+    method: 'GET'
+  })
+    .then(response => response.json())
+    .then(profile => {
+
+      // If successful, update the page
+      if (profile.error == undefined) {
+
+        // Replace the pseudo-form with the retrieved profile contents
+        // CITATION: https://stackoverflow.com/a/34913701/15100723
+        for (const [fieldName, fieldValue] of Object.entries(profile)) {
+
+          // TO DO:  Refactor to use helper function?
+          // Replace the contents of each input with its original value, as returned from the API
+          const input = document.querySelector(`#${fieldName}`);
+          const child = newElement('span', fieldValue, 'value', fieldName, null, input)
+
+        }
+
+        // Replace the save button with an edit button
+        swapProfileButtons('save', 'edit');
+
+        // Reenable the submit cart button, if present  (Again: using querySelectorAll to gracefully handle missing elements)
+        document.querySelectorAll('#submit-cart-button').forEach(button => {
+          button.removeAttribute('disabled')
+        });
+
+
+      } else {
+        // TO DO:  Display an alert above the post
+        // DESIGN NOTE:  I'm repeating a queryselector, but I think that's better than storing the object,
+        //               since this block will not usually be executed - only if there's an error.
+        // displayAlert(document.querySelector(`.post-row[data-post="${id}"] .alert`), post.error, 'danger');
+
+        alert(`ERROR: ${profile.error}`);
+
+        // Reenable the save and cancel buttons, so the user can try again
+        saveButton.disabled = false;
+        cancelButton.disabled = false;
+
+      }
+
+    });
 
 
 }
@@ -267,18 +332,28 @@ function swapProfileButtons(from, to) {
     return;
   }
 
+  // Create a new edit or save button
   const oldButton = document.querySelector(`#${from}-profile-button`);
-  const newButton = document.createElement('button');
-  newButton.id = `${to}-profile-button`;
-  newButton.dataset.profile = oldButton.dataset.profile;
   // CITATION:  https://flaviocopes.com/how-to-uppercase-first-letter-javascript/
-  newButton.innerHTML = `${to.charAt(0).toUpperCase()}${to.slice(1)}`;
+  const newButton = newElement('button', `${to.charAt(0).toUpperCase()}${to.slice(1)}`, 'btn btn-link', `${to}-profile-button`);
+  newButton.dataset.profile = oldButton.dataset.profile;
   if (to == 'save') {
     newButton.addEventListener('click', () => saveProfile(oldButton.dataset.profile));
   } else {
     newButton.addEventListener('click', () => profileForm(oldButton.dataset.profile));
   }
+
+  // Replace the old button with the new one
   oldButton.after(newButton);
   oldButton.remove();
+
+  // Add or remove the cancel button
+  if (to == 'save') {
+    const cancelButton = newElement('button', 'Cancel', 'btn btn-link', 'cancel-button');
+    cancelButton.addEventListener('click', () => cancelProfile(oldButton.dataset.profile));
+    newButton.after(cancelButton);
+  } else {
+    document.querySelector('#cancel-button').remove();
+  }
 
 }
