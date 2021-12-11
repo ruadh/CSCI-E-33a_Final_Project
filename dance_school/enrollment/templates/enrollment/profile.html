@@ -18,8 +18,12 @@
         <div class="card">
             <div class="card-body">
                 <h3 class="card-title">Account</h3>
-                <p><span class="label">Username:</span> {{profile.username}}</p>
-                <p><span class="label">Password:</span> ****************</p>
+                <div>
+                    <span class="label">Username:</span> <span class="value">{{profile.username}}</span>
+                </div>
+                <div>
+                    <span class="label">Password:</span> <span class="value">****************</span>
+                </div>
             </div>
         </div>
 
@@ -62,15 +66,18 @@
         <div class="card">
             <div class="card-body">
                 <h3 class="card-title">Administrative</h3>
-                <p><span class="label">Account created on:</span> {{profile.date_joined}}</p>
-                <p><span class="label">Accepted class policies on:</span> {{profile.accept_terms}}</p>
+                <div>
+                    <span class="label">Account created on:</span> <span class="value">{{profile.date_joined}}</span>
+                </div>
+                    <div><span class="label">Accepted class policies on:</span> <span class="value">{{profile.accept_terms}}</span>
+                </div>
             </div>
         </div>
     </div>
     {% endif %}
 
     <!-- On larger screens, put orders and enrollment history in their own column-->
-    <div class="col-md">
+    <div class="col-md" id="enrollments-orders">
 
         {% if semesters %}
             <h2>Enrollment History</h2>
@@ -93,22 +100,29 @@
         {% for order in orders %}
             <div class="card">
                 <div class="card-body">
-                    <h3 class="card-title">Order: {{order.id}}</h3>
-                    {# CITATION:  https://stackoverflow.com/a/1479236 #}
-                    <h4>{{order.items.0.offering.semester}}:</h4>
+                    {# CITATION:  Accessing values in a list item https://stackoverflow.com/a/1479236 #}
+                    <h3 class="card-title">Order: {{order.id}} - {{order.items.0.offering.semester}}</h3>
                     {% for item in order.items %}
                         <ul>
-                            <li>{{item.offering.course.title}} {{item.offering.weekday_name}} ${{item.price}}
+                            <li>{{item.offering.course.title}} {{item.offering.weekday_name}} ${{item.price|floatformat:2}}
                                 {% if item.planned_absences %}
                                     (Planned Absences:  {{item.planned_absences}})
                                 {% endif %}
                             </li>
                         </ul>
                     {% endfor %}
-                    <p><span class="label">Subtotal:</span> ${{order.subtotal}}</p>
-                    <p><span class="label">Discounts:</span> -${{order.discount|default_if_none:"0.00"}}</p>
-                    <p><span class="label">Total:</span> ${{order.total}}</p>
-                    <p><span class="label">Completed:</span> {{order.completed|date:"n/j/Y g:i a"}}</p>
+                    <div>
+                        <span class="label">Subtotal:</span> <span class="value">${{order.subtotal|floatformat:2}}</span>
+                    </div>
+                    <div>
+                        <span class="label">Discounts:</span> <span class="value"></span>-${{order.discount|default_if_none:"0.00"|floatformat:2 }}</span>
+                    </div>
+                    <div>
+                        <span class="label">Total:</span> <span class="value"></span>${{order.total|floatformat:2 }}</span>
+                    </div>
+                    <div>
+                        <span class="label">Completed:</span> <span class="value"></span>{{order.completed|date:DATE_TIME_FORMAT}}</span>
+                    </div>
                 </div>
             </div>
         {% endfor %}

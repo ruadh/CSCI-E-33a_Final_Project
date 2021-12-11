@@ -130,14 +130,14 @@ AUTH_USER_MODEL = 'enrollment.User'
 
 # Note:  when using Python datetime, use weekday(), not isoweekday()
 WEEKDAYS = (
-       (0, 'Monday'),
-       (1, 'Tuesday'),
-       (2, 'Wednesday'),
-       (3, 'Thursday'),
-       (4, 'Friday'),
-       (5, 'Saturday'),
-       (6, 'Sunday'),
-   )
+    (0, 'Monday'),
+    (1, 'Tuesday'),
+    (2, 'Wednesday'),
+    (3, 'Thursday'),
+    (4, 'Friday'),
+    (5, 'Saturday'),
+    (6, 'Sunday'),
+)
 
 # Fields allowed to be edited by the profile update form
 
@@ -152,34 +152,46 @@ EDITABLE_USER_FIELDS = [
     'emergency_phone'
 ]
 
-# TO DO:  Replace this with a more realistic size
+# Number of results per page when paginating results
+# NOTE:  This was set to a small number for demo purposes.  10+ would be more typical for a production system.
 PAGE_SIZE = 5
 
+# Provide a link to the Markdown cheat sheet below fields that support Markdown formatting in Django admin
+# NOTE:  to add this support to additional fields in the future, add this to the field's help_text attribute
+MARKDOWN_HELP_TEXT = 'You may use <a href="https://www.markdownguide.org/cheat-sheet/" target="_blank">Markdown</a> to format this field.'
+
+
 # ENTER YOUR SCHOOL'S CUSTOMIZATIONS HERE:
-# NOTE:  These must also be added to context_processors.py to be used by Django templates and/or JavaScript
+# DEVELOPER NOTE:  Any additional values entered in the future must also be added to context_processors.py if they will be used by Django templates and/or JavaScript
 
-# System's default display timezone 
-# DEFAULT_TIMEZONE = 'America/New_York'
-DEFAULT_TIMEZONE = 'America/Chicago'
-
-# Date and time format
-DATE_TIME_FORMAT = 'F jS \\a\\t P'
-
-# Date and time format with timezone 
-DATE_TIME_TIMEZONE_FORMAT = 'F jS \\a\\t P T'
 
 # The name of your school
 SCHOOL_NAME = 'Belly Dance Somerville'
+
+# Hourly rate used for calculating offering prices
+HOURLY_RATE = 25
+
+# System's default display timezone
+# DEFAULT_TIMEZONE = 'America/New_York'
+DEFAULT_TIMEZONE = 'America/Chicago'
+
+# Time format
+TIME_FORMAT = "g:i a"
+
+# Date and time format when the year isn't needed
+DATE_TIME_FORMAT = 'F jS, Y \\a\\t P'
+
+# Date and time format when the year isn't needed
+DATE_TIME_FORMAT_NO_YEAR = 'F jS \\a\\t P'
+
+# Date and time format with timezone
+DATE_TIME_TIMEZONE_FORMAT = 'F jS \\a\\t P T'
+
+# Number formatting
+USE_THOUSAND_SEPARATOR = True
 
 # The name of your class policies
 SCHOOL_POLICIES = 'the Belly Dance Somerville Policies and Community Agreement'
 
 # The text to be displayed if no offerings are found
 NO_OFFERINGS = 'Check back soon for information on our upcoming classes.'
-
-# Provide a link to the Markdown cheat sheet below fields that support Markdown formatting in Django admin
-# NOTE:  to add this support to additional fields in the future, add this to the field's help_text attribute  
-MARKDOWN_HELP_TEXT = 'You may use <a href="https://www.markdownguide.org/cheat-sheet/" target="_blank">Markdown</a> to format this field.'
-
-# Hourly rate used for calculating offering prices
-HOURLY_RATE = 25

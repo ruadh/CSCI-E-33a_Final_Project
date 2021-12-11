@@ -1,5 +1,12 @@
 /* NOTE:    This app's look & feel is also affected by Boostrap CSS */
 
+/* Whitespace around the major structural elements */
+header,
+footer, 
+.row {
+    margin: 20px;
+}
+
 form label,
 form input[type="submit"] {
     display: block;
@@ -14,16 +21,47 @@ form input[type="submit"] {
     border-radius: 5px;
 }
 
+.accordion {
+    margin: 20px;
+}
+
+.accordion .card {
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: 0;
+}
+
+#cart-container ul,
+#enrollments-orders ul {
+    padding: 0;
+}
+
+#cart-container li,
+#enrollments-orders li {
+    list-style: none;
+}
+
 #cart-container,
 #offerings-container {
     padding-left: 0;
     padding-right: 0;
 }
 
+input[type="submit"] {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
 
 /* Left-justify Boostrap Grid containers instead of default centered behavior */
-.container{
+.container {
     margin-left: 10px;
+}
+
+/* Center the paginator elements */
+.container nav {
+    display: flex;
+    justify-content: center;
 }
 
 /* RESPONSIVE - Styles for larger screens - Most responsive behavior is based on the Boostrap md breakpoint  */

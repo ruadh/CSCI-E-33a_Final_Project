@@ -111,6 +111,13 @@ When the API receives the profile update request (the profile function in views.
 The downside of that approach is that it opens up the ability to edit ANY user field, which is not secure.  (ex:  It would allow a user to set themselves as staff if they could manipulate the payload.)  To prevent this, fields are checked against an allow list, EDITABLE_USER_FIELDS, in settings.py.  I don't know enough about the Django user model to be sure that this would be good enough in a production setting, but I think it's good enough for a class project.
 
 
+### HTML choices
+
+#### Bootstrap specialty classes on non-specialty elements
+In several places, I applied a Bootstrap specialty class to an element that didn't need the special abilities so that the styling would be consistent.  For example, I applied the accordion class to the class list so I can expand/collapse the class details, but applied it to the shopping cart in the sidebar just so it would have the same padding.  
+
+One downside of this approach is that it would make it harder to target the listings by class in JavaScript, but that isn't needed for this project or any of the future enhancements I brainstormed.  Plus, I can easily be overcome the issue by targeting elements with IDs or more complex selectors.  And if that still didn't meet the need, I could start using SASS for my style sheet and set up a new class that inherits from the Boostrap class.
+
 
 ### Resisting scope creep
 There are some features that I did not include because they are not needed to meet my spec, but that I'd recommend adding to the requirements if I were building this for a client.
@@ -167,7 +174,9 @@ SECRET_KEY = 'a-new-secure-string'
 
 ## CITATIONS:
 
-I added comments in my code with the prefix "CITATION:" for code borrowed from outside sources (stack overflow, blogs, project starter files, section examples, etc.).  I did NOT include citations for code adapted from official documentation (Django, Bootstrap), or when an outside source pointed me in the right direction but the work is primarily my own.
+I added comments in my code with the prefix "CITATION:" for code borrowed from outside sources like Stack Overflow, blogs, project starter files, section examples, etc.
+
+I did NOT include citations for code adapted from official documentation (Django, Bootstrap), or when an outside source pointed me to a concept but I wrote my own code from scratch.
 
 
 ## EVALUATION TIPS:

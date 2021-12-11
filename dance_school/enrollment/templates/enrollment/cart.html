@@ -28,7 +28,7 @@
                     {% if semester.registration_status == 'closed' %}
                         <p>{{semester}} registration closed on {{semester.registration_close}} </p>
                     {% else %}
-                        <p>{{semester}} registration is open from {{semester.registration_open|date:DATE_TIME_FORMAT}} to {{semester.registration_close|date:DATE_TIME_TIMEZONE_FORMAT}}, or until classes sell out. </p>
+                        <p>{{semester}} registration is open from {{semester.registration_open|date:DATE_TIME_FORMAT_NO_YEAR }} to {{semester.registration_close|date:DATE_TIME_TIMEZONE_FORMAT}}, or until classes sell out. </p>
                         <h4>Review Your Cart</h4>
                     {% endif %}
                 {% endif %}
@@ -36,7 +36,7 @@
                 {% for item in cart.items %}
                     <li data-offering={{item.offering.id}}>{{item.offering.course.title}} {{item.offering.weekday_name}} ${{item.price}} 
                         {% if not cart.completed %}
-                            <button class="remove-button" data-item={{item.id}}>Remove</button>
+                            <button class="remove-button btn btn-link" data-item={{item.id}}>(Remove)</button>
                         {% endif %}
                     </li>
                 {% endfor %}
