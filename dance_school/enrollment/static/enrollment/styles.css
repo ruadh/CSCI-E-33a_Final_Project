@@ -25,13 +25,19 @@ form input[type="submit"] {
     margin: 20px;
 }
 
+
 .accordion .card {
     margin-top: 0;
     margin-bottom: 0;
     margin-left: 0;
 }
 
-/* Accordion expand/collapse button/links */
+.borderless-card {
+    padding-bottom: 30px;
+    border: none;
+}
+
+/* Accordion expand/collapse links */
 .card-header .btn-link {
     font-size: 1.25rem;
     padding-left: 0;
@@ -73,11 +79,11 @@ input[type="submit"] {
 
 /* RESPONSIVE - Styles for larger screens - Most responsive behavior is based on the Boostrap md breakpoint  */
 
-/* @media(min-width: 720px) {
+@media(min-width: 768px) {
 
-    #cart-container,
-    #offerings-container {
-        border: none;
+    /* Remove the extra whitespace when displayed in columns */
+    .borderless-card{
+        padding-bottom: 0px;
     }
 
-} */
+}

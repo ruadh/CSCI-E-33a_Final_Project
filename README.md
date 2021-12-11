@@ -132,6 +132,8 @@ I chose to include a few features that are not required for the features in my p
 #### Timezones
 The current proposal covers only in-person offerings, which we can assume all happen in the same time zone.  However, I chose to include a timezone field in the User and Offering models because that lets us add support for online offerings in the future (Zoom classes, webinars, etc.), and I had already implemented it in earlier projects.
 
+During testing, I noticed that a hard refresh in the browser would deactivate the user's timezone, so I re-activate it in every python function that is accessible through a URL.
+
 
 
 ### Settings
@@ -146,10 +148,11 @@ of scope for the final project:  it sounds like a quick addition, but we'd also 
 In several functions, I chose to pass the user as a separate parameter instead of using request.user.  This is not needed for the features in my final project spec, but it leaves open the door for some future enhancements where the user we're interested in isn't necessarily the current user.  Ex: allowing a parent to register along with a child, or allowing an admin to view orders in the front end.
 
 
-### CSRF - TO DO.
+### Reloading page after add/remove from cart in JS
+TO DO:  refresh page instead of updating all values
 
-We have been told that it is okay to use @csrf_except for our projects so BLAH.
-(If I keep it:)
+### CSRF on GET
+
 I decided to include CSRF on the form in index.html that takes the user to the checkout preview screen.  I wasn't sure if that's needed on a GET request, but I decided to include it after reading this thread:
 https://security.stackexchange.com/q/115794
 

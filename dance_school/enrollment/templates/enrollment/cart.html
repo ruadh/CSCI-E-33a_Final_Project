@@ -4,103 +4,123 @@
 
 {% block body %}
 
-{# Container for fading JavaScript-created error messages #}
-<div id="main-alert-fading" class="alert alert-fade" role="alert">
-</div>
+    {% if cart %}
 
-{# Container for persistent Django-created error messages #}
-{% if message %}
-<div id="main-alert-persistent" class="alert alert-danger">
-    {{message|linebreaksbr}}
-</div>
-{% endif %}
-
-<div class="row">
-
-    <div id="cart-container" class="col-md order-md-5 card">
-        <div>
-            {% if cart %}
-                {% if cart.completed %}
-                    <h2 class="card-header section-header">Order {{cart.id}}</h2>
-                    <p><span class="label">Completed:</span>  {{cart.completed}}</p>
+        <header>
+            {% if cart.completed %}
+                <h2>Order Details</h2>
+            {% else %}
+                <h2>Checkout</h2>
+                {% if semester.registration_status == 'closed' %}
+                    <p>{{semester}} registration closed on {{semester.registration_close}} </p>
                 {% else %}
-                    <h2 class="card-header section-header">Checkout</h2>
-                    {% if semester.registration_status == 'closed' %}
-                        <p>{{semester}} registration closed on {{semester.registration_close}} </p>
-                    {% else %}
-                        <p>{{semester}} registration is open from {{semester.registration_open|date:DATE_TIME_FORMAT_NO_YEAR }} to {{semester.registration_close|date:DATE_TIME_TIMEZONE_FORMAT}}, or until classes sell out. </p>
-                        <h4>Review Your Cart</h4>
-                    {% endif %}
+                    <p>{{semester}} registration is open from {{semester.registration_open|date:DATE_TIME_FORMAT_NO_YEAR }} to {{semester.registration_close|date:DATE_TIME_TIMEZONE_FORMAT}}, or until classes sell out. </p>
                 {% endif %}
-                <ul id="cart-items">
-                {% for item in cart.items %}
-                    <li data-offering={{item.offering.id}}>{{item.offering.course.title}} {{item.offering.weekday_name}} ${{item.price}} 
-                        {% if not cart.completed %}
-                            <button class="remove-button btn btn-link" data-item={{item.id}}>(Remove)</button>
-                        {% endif %}
-                    </li>
-                {% endfor %}
-                </ul>
-                {% if cart.items %}
-                    <p><span class="label">Subtotal:</span>  ${{cart.subtotal|default_if_none:"0.00"}}</p>
-                    <p><span class="label">Discounts: </span> ${{cart.discount|default_if_none:"0.00"}}</p>
-                    <p><span class="label">Total:</span>  ${{cart.total|default_if_none:"0.00"}}</p>
+            {% endif %}
+        </header>
+
+        <div class="row">
+            <div id="cart-container" class="col-md">
+                <div class="accordion" id="cart-accordion">
+
+                    <div class="card">
+                        <div class="card-header">
+                            {% if cart.completed %}
+                                <h2 class="section-header">Order {{cart.id}}</h2>
+                                <div>
+                                    <span class="label">Completed:</span> <span class="value">{{cart.completed|date:DATE_TIME_FORMAT}}</span>
+                                </div>
+                            {% else %}
+                                <h2 class="section-header">Items in Cart</h2>
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            <ul id="cart-items">
+                                {% for item in cart.items %}
+                                    <li data-offering={{item.offering.id}}>{{item.offering.course.title}} {{item.offering.weekday_name}} ${{item.price|floatformat:2 }} 
+                                        {% if not cart.completed %}
+                                            <button class="remove-button btn btn-link" data-item={{item.id}}>Remove</button>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                            {% if cart.items %}
+                                <div>
+                                    <span class="label">Subtotal:</span>  <span>${{cart.subtotal|default_if_none:"0.00"|floatformat:2 }}</span>
+                                </div>
+                                <div>
+                                    <span class="label">Discounts: </span> <span>${{cart.discount|default_if_none:"0.00"|floatformat:2 }}</span>
+                                </div>
+                                <div>
+                                    <span class="label">Total:</span>  <span>${{cart.total|default_if_none:"0.00"|floatformat:2 }}</span>
+                                </div>   
+                            {% else %}
+                            <div>This cart is empty.  <a href="{% url 'index' %}">Return to class listings.</a></div>
+                            {% endif %}
+                        </div>
+                    </div>
+
                     {% if cart.total > 0 and not cart.completed %}
-                        <h4>Review Your Profile <button id="edit-profile-button" data-profile={{profile.id}}>Edit</button></h4>
-                        <div class="container">
-                            <div class="row">
-                                <div class="col-md">
-                                    <div class="card editable">
-                                        <h4 class="card-title">About Me</h4>
-                                        <div>
-                                            <span class="label">First Name:</span> <span class="value" id="first-name">{{profile.first_name}}</span>
-                                        </div>
-                                        <div>    
-                                            <span class="label">Last Name:</span> <span class="value" id="last-name">{{profile.last_name}}</span>
-                                        </div>
-                                        <div>
-                                            <span class="label">Email:</span> <span class="value" id="email">{{profile.email}}</span>
-                                        </div>
-                                        <div>
-                                            <span class="label">Phone:</span> <span class="value" id="phone">{{profile.phone}}</span>
-                                        </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="section-header">Review Your Profile <button id="edit-profile-button" data-profile={{profile.id}} class="btn btn-link">Edit</button></h2>
+                        </div>
+                        <div class="row">
+                            <div class="col-md">
+                                <div class="editable card borderless-card">
+                                    <h4 class="card-title">About Me</h4>
+                                    <div>
+                                        <span class="label">First Name:</span> <span class="value" id="first-name">{{profile.first_name}}</span>
+                                    </div>
+                                    <div>    
+                                        <span class="label">Last Name:</span> <span class="value" id="last-name">{{profile.last_name}}</span>
+                                    </div>
+                                    <div>
+                                        <span class="label">Email:</span> <span class="value" id="email">{{profile.email}}</span>
+                                    </div>
+                                    <div>
+                                        <span class="label">Phone:</span> <span class="value" id="phone">{{profile.phone}}</span>
                                     </div>
                                 </div>
-                                <div class="col-md">
-                                    <div class="card editable">
-                                        <h4 class="card-title">Emergency Contact</h4>
-                                        <div>
-                                            <span class="label">First Name:</span> <span class="value" id="emergency-first">{{profile.emergency_first}}</span>
-                                        </div>
-                                        <div>
-                                            <span class="label">Last Name:</span> <span class="value" id="emergency-last">{{profile.emergency_last}}</span>
-                                        </div>
-                                        <div>
-                                            <span class="label">Email:</span> <span class="value" id="emergency-email">{{profile.emergency_email}}</span>
-                                        </div>
-                                        <div>
-                                            <span class="label">Phone:</span> <span class="value" id="emergency-phone">{{profile.emergency_phone}}</span>
-                                        </div>
+                            </div>
+                            <div class="col-md">
+                                <div class="editable card borderless-card">
+                                    <h4 class="card-title">Emergency Contact</h4>
+                                    <div>
+                                        <span class="label">First Name:</span> <span class="value" id="emergency-first">{{profile.emergency_first}}</span>
+                                    </div>
+                                    <div>
+                                        <span class="label">Last Name:</span> <span class="value" id="emergency-last">{{profile.emergency_last}}</span>
+                                    </div>
+                                    <div>
+                                        <span class="label">Email:</span> <span class="value" id="emergency-email">{{profile.emergency_email}}</span>
+                                    </div>
+                                    <div>
+                                        <span class="label">Phone:</span> <span class="value" id="emergency-phone">{{profile.emergency_phone}}</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <h4>Payment Information</h4>
-                        <form action="{% url 'order' cart.id %}" method="POST" class="">
-                            {% csrf_token %}
-                            {{ payment_form }}
-                            <input id="submit-cart-button" type="submit" class="btn btn-primary link-as-button">
-                        </form>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="section-header">Payment Information</h2>
+                            (Gift cards are the only supported payment method at this time.)
+                        </div>
+                        <div class="card-body">
+                            <form action="{% url 'order' cart.id %}" method="POST" class="">
+                                {% csrf_token %}
+                                {{ payment_form }}
+                                <input id="submit-cart-button" type="submit" class="btn btn-primary link-as-button">
+                            </form>
+                        </div>
+                    </div>
                     {% endif %}
-                {% else %}
-                    <h4>No items in your cart.</h4>
-                {% endif %}
 
-            {% endif %}
-            <!-- <button id="checkout-button" data-order="{{cart.id}}">Checkout</button> -->
-        </div>
-    </div>
-
-</div>
+                </div>
+            </div>
+            
+    {% endif %}
 
 {% endblock %}

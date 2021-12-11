@@ -158,11 +158,8 @@ def index(request, page=None, message=None):
     # Pass the latest semester to the template
     semester = latest_semester()
 
-    if request.user.is_authenticated:
-        timezone.activate(request.user.timezone)
-    else:
-        timezone.activate(settings.DEFAULT_TIMEZONE)
-
+    # Make sure the timezone isn't overriden by a hard reset
+    set_timezone(request)
     return render(request, 'enrollment/index.html', {
         'page': page,
         'cart': cart,
@@ -173,6 +170,9 @@ def index(request, page=None, message=None):
 
 @login_required
 def profile_view(request, id):
+    # Make sure the timezone isn't overridden by a hard reset
+    set_timezone(request)
+
     if request.method == 'GET':
         # Non-admin users may only view their own profiles
         if request.user.id == id or request.user.is_staff:
@@ -255,6 +255,10 @@ def profile(request, id):
 @login_required
 def contact_sheet(request, id):
     # TO DO:  clarify that id is the offering id in the docstring
+
+    # Make sure the timezone isn't overriden by a hard reset
+    set_timezone(request)
+
     # Only available for non-admin users
     if request.user.is_staff:
         try:
@@ -461,7 +465,7 @@ def validate_checkout(request, id):
 
     # Restrict checkout to the cart's owner
     if cart.student != request.user:
-        return 'You are not authorized to check out carts belonging to another user.'
+        return 'You are not authorized to access carts belonging to another user.'
 
     # Make sure we're not trying to check out an order that has already been completed (ex: via URL)
     if cart.completed != None:
@@ -536,6 +540,9 @@ def authorized_get_profile(request, id):
 @login_required
 def checkout(request, id):
 
+    # Make sure the timezone isn't overriden by a hard reset
+    set_timezone(request)
+
     # Default behavior:  no payment form or update profile pseudo-form (Will be added below if needed)
     payment_form = None
     profile = None
@@ -597,3 +604,10 @@ def checkout(request, id):
             'payment_form': payment_form,
             'profile': profile
         })
+
+# Helper function:  set timezone
+def set_timezone(request):
+    if request.user.is_authenticated:
+        timezone.activate(request.user.timezone)
+    else:
+        timezone.activate(settings.DEFAULT_TIMEZONE)

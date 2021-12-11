@@ -4,17 +4,6 @@
 
 {% block body %}
 
-{# Container for fading JavaScript-created error messages #}
-<div id="main-alert-fading" class="alert alert-fade" role="alert" hidden="true">
-</div>
-
-{# Container for persistent Django-created error messages #}
-{% if message %}
-<div id="main-alert-persistent" class="alert alert-danger">
-    {{message|linebreaksbr}}
-</div>
-{% endif %}
-
 <header>
     <h2>Join the Class</h2>
     {% if semester.registration_status == 'closed' %}
@@ -32,7 +21,7 @@
             {% if cart %}
                 <ul id="cart-items">
                 {% for item in cart.items %}
-                    <li data-offering={{item.offering.id}}>{{item.offering.course.title}} {{item.offering.weekday_name}} ${{item.price|floatformat:2 }} <button class="remove-button btn btn-link" data-item={{item.id}}>(Remove)</button></li>
+                    <li data-offering={{item.offering.id}}>{{item.offering.course.title}} {{item.offering.weekday_name}} ${{item.price|floatformat:2 }} <button class="remove-button btn btn-link" data-item={{item.id}}>Remove</button></li>
                 {% endfor %}
                 </ul>
                 {% if cart.items %}

@@ -44,6 +44,13 @@
         </div>
     </nav>
 
+    {# Container for persistent Django-created error messages #}
+    {% if message %}
+    <div id="main-alert-persistent" class="alert alert-danger">
+        {{message|linebreaksbr}}
+    </div>
+    {% endif %}
+
     <!-- Content brought in from templates -->
     {% block body %}
     {% endblock %}
