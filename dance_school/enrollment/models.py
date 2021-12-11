@@ -8,6 +8,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db.models import Sum, Count
 from django.core.exceptions import ValidationError
 from markdown2 import Markdown
+import decimal
 
 
 # CONSTANTS
@@ -143,8 +144,10 @@ class Offering(models.Model):
         Semester, on_delete=PROTECT, null=False, blank=False, related_name='offerings')
     location = models.ForeignKey(
         Location, on_delete=PROTECT, null=False, blank=False, related_name='offerings')
-    price = models.DecimalField(
-        max_digits=7, decimal_places=2, null=False, blank=False)
+    # Store the hourly rate on creation
+    hourly_rate = models.DecimalField(max_digits=5, decimal_places=2, default=settings.HOURLY_RATE, null=False, blank=False)
+    price_override = models.DecimalField(
+        max_digits=7, decimal_places=2, null=True, blank=True)
     weekday = models.IntegerField(
         choices=settings.WEEKDAYS, null=False, blank=False)
     start_time = models.TimeField(null=False, blank=False)
@@ -200,6 +203,13 @@ class Offering(models.Model):
     def no_class_dates_text(self):
         # CITATION:  https://stackoverflow.com/a/8722486/15100723
         return ", ".join(date.strftime("%-m/%-d") for date in self.no_class_dates)
+
+    @property
+    def price(self):
+        diff = timedelta(hours=self.end_time.hour, minutes=self.end_time.minute) - timedelta(hours=self.start_time.hour, minutes=self.start_time.minute) 
+        hours = diff.seconds / 3600
+        calc_price = round(self.hourly_rate * self.num_weeks * decimal.Decimal(hours), 2)
+        return calc_price
 
     # CITATION:  https://stackoverflow.com/a/54011108
     def clean(self):

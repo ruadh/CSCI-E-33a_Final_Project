@@ -40,7 +40,7 @@ class OrderAdmin(admin.ModelAdmin):
 
 class OfferingAdmin(admin.ModelAdmin):
     list_display = ('semester', 'course', 'weekday', 'start_time', 'location', 'spots_left', 'contact_sheet')
-    readonly_fields = ('offering_dates', 'no_class_dates', 'num_weeks')
+    readonly_fields = ('price', 'offering_dates', 'no_class_dates', 'num_weeks')
 
     # CITATION:  https://stackoverflow.com/a/32220985
     def contact_sheet(self, obj):

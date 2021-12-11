@@ -181,3 +181,5 @@ NO_OFFERINGS = 'Check back soon for information on our upcoming classes.'
 # NOTE:  to add this support to additional fields in the future, add this to the field's help_text attribute  
 MARKDOWN_HELP_TEXT = 'You may use <a href="https://www.markdownguide.org/cheat-sheet/" target="_blank">Markdown</a> to format this field.'
 
+# Hourly rate used for calculating offering prices
+HOURLY_RATE = 25
