@@ -175,10 +175,13 @@ HOURLY_RATE = 25
 # DEFAULT_TIMEZONE = 'America/New_York'
 DEFAULT_TIMEZONE = 'America/Chicago'
 
+# Date format
+DATE_FORMAT = 'F jS, Y'
+
 # Time format
 TIME_FORMAT = "g:i a"
 
-# Date and time format when the year isn't needed
+# Date and time format when the year is needed
 DATE_TIME_FORMAT = 'F jS, Y \\a\\t P'
 
 # Date and time format when the year isn't needed

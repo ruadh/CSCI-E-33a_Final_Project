@@ -7,6 +7,7 @@ def global_settings(request):
     return {
     'DEFAULT_TIMEZONE': settings.DEFAULT_TIMEZONE,
     'TIME_FORMAT': settings.TIME_FORMAT,
+    'DATE_FORMAT': settings.DATE_FORMAT,
     'DATE_TIME_FORMAT': settings.DATE_TIME_FORMAT,
     'DATE_TIME_FORMAT_NO_YEAR': settings.DATE_TIME_FORMAT_NO_YEAR,
     'DATE_TIME_TIMEZONE_FORMAT': settings.DATE_TIME_TIMEZONE_FORMAT,

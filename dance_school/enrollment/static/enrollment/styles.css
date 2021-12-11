@@ -31,6 +31,12 @@ form input[type="submit"] {
     margin-left: 0;
 }
 
+/* Accordion expand/collapse button/links */
+.card-header .btn-link {
+    font-size: 1.25rem;
+}
+
+
 #cart-container ul,
 #enrollments-orders ul {
     padding: 0;

@@ -84,7 +84,6 @@
                 <div id="collapse{{offering.id}}" class="collapse" aria-labelledby="heading{{offering.id}}"
                     data-parent="#offering-accordion">
                     <div class="card-body">
-                        <h4>{{offering.course.title}}</h4>
                         <h5>{{offering.course.subtitle}}</h5>
                         <p><span class="label">When:</span> {{offering.weekday_name}}s {{offering.start_time|date:TIME_FORMAT}} - {{offering.end_time|date:TIME_FORMAT}} at {{offering.location}}</p>
                         <p><span class="label">Where:</span> <a href="{{offering.location.web_site}}">{{offering.location}}</a>, {{offering.location.address_1}}, {{offering.location.city}}, {{offering.location.state}} (<a href="{{offering.location.parking}}">parking info</a>)</p>

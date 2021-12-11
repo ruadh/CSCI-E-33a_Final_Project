@@ -81,51 +81,71 @@
 
         {% if semesters %}
             <h2>Enrollment History</h2>
-            {% for semester in semesters %}
-                <div class="card">
-                    <div class="card-body">
-                        <h3 class="card-title">{{semester.name}}</h3>
-                        <ul>
-                            {% for enrollment in semester.enrollments %}
-                                <li>{{enrollment.offering.course.title}} - {{enrollment.offering.weekday_name}} </li>
-                            {% endfor %}
-                        </ul>
+            <div class="accordion" id="enrollment-accordion">
+                {% for semester in semesters %}
+                <div class="card" data-semester="{{semester.id}}">
+                    <div class="card-header" id="heading{{semester.id}}">
+                        <h3 class="mb-0">
+                            <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse{{semester.id}}"
+                                aria-expanded="true" aria-controls="collapse{{semester.id}}">
+                                {{semester.name}}
+                            </button>
+                        </h3>
+                    </div>
+                    <div id="collapse{{semester.id}}" class="collapse" aria-labelledby="heading{{semester.id}}" data-parent="#enrollment-accordion">
+                        <div class="card-body">
+                            <ul>
+                                {% for enrollment in semester.enrollments %}
+                                    <li>{{enrollment.offering.course.title}} - {{enrollment.offering.weekday_name}} </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
                     </div>
                 </div>
-            {% endfor %}
+                {% endfor %}
+            </div>
         {% endif %}
  
         {% if orders %}
         <h2>Orders</h2>
-        {% for order in orders %}
-            <div class="card">
-                <div class="card-body">
-                    {# CITATION:  Accessing values in a list item https://stackoverflow.com/a/1479236 #}
-                    <h3 class="card-title">Order: {{order.id}} - {{order.items.0.offering.semester}}</h3>
-                    {% for item in order.items %}
-                        <ul>
-                            <li>{{item.offering.course.title}} {{item.offering.weekday_name}} ${{item.price|floatformat:2}}
-                                {% if item.planned_absences %}
-                                    (Planned Absences:  {{item.planned_absences}})
-                                {% endif %}
-                            </li>
-                        </ul>
-                    {% endfor %}
-                    <div>
-                        <span class="label">Subtotal:</span> <span class="value">${{order.subtotal|floatformat:2}}</span>
+        <div class="accordion" id="order-accordion">
+            {% for order in orders %}
+                <div class="card" data-order="{{order.id}}">
+                    <div class="card-header" id="heading{{order.id}}">
+                        <h3 class="mb-0">
+                            <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse{{order.id}}"
+                                aria-expanded="true" aria-controls="collapse{{order.id}}">
+                                Order {{order.id}} - {{order.completed|date:DATE_FORMAT}}
+                            </button>
+                        </h3>
                     </div>
-                    <div>
-                        <span class="label">Discounts:</span> <span class="value"></span>-${{order.discount|default_if_none:"0.00"|floatformat:2 }}</span>
-                    </div>
-                    <div>
-                        <span class="label">Total:</span> <span class="value"></span>${{order.total|floatformat:2 }}</span>
-                    </div>
-                    <div>
-                        <span class="label">Completed:</span> <span class="value"></span>{{order.completed|date:DATE_TIME_FORMAT}}</span>
+                    <div id="collapse{{order.id}}" class="collapse" aria-labelledby="heading{{order.id}}" data-parent="#order-accordion">
+                        <div class="card-body">
+                            {# CITATION:  Accessing values in a list item https://stackoverflow.com/a/1479236 #}
+                            <h4 class="card-title">{{order.items.0.offering.semester}}</h4>
+                            {% for item in order.items %}
+                                <ul>
+                                    <li>{{item.offering.course.title}} {{item.offering.weekday_name}} ${{item.price|floatformat:2}}
+                                        {% if item.planned_absences %}
+                                            (Planned Absences:  {{item.planned_absences}})
+                                        {% endif %}
+                                    </li>
+                                </ul>
+                            {% endfor %}
+                            <div>
+                                <span class="label">Subtotal:</span> <span class="value">${{order.subtotal|floatformat:2}}</span>
+                            </div>
+                            <div>
+                                <span class="label">Discounts:</span> <span class="value"></span>-${{order.discount|default_if_none:"0.00"|floatformat:2 }}</span>
+                            </div>
+                            <div>
+                                <span class="label">Total:</span> <span class="value"></span>${{order.total|floatformat:2 }}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        {% endfor %}
+            {% endfor %}
+        </div>
         {% endif %}
     </div>
 
