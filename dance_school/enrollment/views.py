@@ -432,7 +432,7 @@ def update_cart(request, id):
     '''
     Add or remove a line item from a cart via the API
 
-    Note:  the id argument refers to the offering to add during a POST, but the line item ID during a DELETE
+    Note:  If POST, id is the ID of the offering to add.  If DELETE, id is the line item to remove.
     '''
 
     if request.method == 'POST':

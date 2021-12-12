@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 /**
  * Add an offering to the cart
+ * @param {integer} id - the ID of the offering to be added
  */
 
 function addToCart(id) {
@@ -33,11 +34,11 @@ function addToCart(id) {
 
   // Add the offering to the cart via the API
   fetch(`/cart/${id}`, {
-    method: 'POST',
-    headers: {
-      'X-CSRFToken': token
-    }
-  })
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': token
+      }
+    })
     .then(response => response.json())
     .then(lineItem => {
 
@@ -53,8 +54,10 @@ function addToCart(id) {
 
 }
 
+
 /**
  * Remove a line item from the cart
+ * @param {integer} id - the ID of the line item to be removed
  */
 
 function removeFromCart(id) {
@@ -68,11 +71,11 @@ function removeFromCart(id) {
 
   // Add the offering to the cart via the API
   fetch(`/cart/${id}`, {
-    method: 'DELETE',
-    headers: {
-      'X-CSRFToken': token
-    }
-  })
+      method: 'DELETE',
+      headers: {
+        'X-CSRFToken': token
+      }
+    })
     .then(response => response.json())
     .then(lineItem => {
 
@@ -92,7 +95,7 @@ function removeFromCart(id) {
 /**
  * Replace editable profile values with form fields
  * 
- * Dependency:  This will only affect elements with class "value" inside a parent element of class "editable"
+ * Dependency:  This will only affect DOM elements with class "value" inside a parent element of class "editable"
  */
 
 function profileForm() {
@@ -115,11 +118,13 @@ function profileForm() {
 
   // Replace the edit button with a Save button
   swapProfileButtons('edit', 'save');
+
 }
 
 
 /**
  * Save the edit profile form
+ * @param {integer} id - the ID of the profile being edited
  */
 
 function saveProfile(id) {
@@ -147,20 +152,18 @@ function saveProfile(id) {
     }
   });
 
-
   if (errorCt == 0) {
 
     // Update the profile's contents via the API
     fetch(`/users/${id}`, {
-      method: 'POST',
-      body: JSON.stringify(body),
-      headers: {
-        'X-CSRFToken': token
-      }
-    })
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: {
+          'X-CSRFToken': token
+        }
+      })
       .then(response => response.json())
       .then(profile => {
-
 
         // If successful, update the page
         if (profile.error == undefined) {
@@ -181,12 +184,9 @@ function saveProfile(id) {
             button.removeAttribute('disabled');
           });
 
-
         } else {
-          // DESIGN NOTE:  I'm repeating a queryselector, but I think that's better than storing the object,
-          //               since this block will not usually be executed - only if there's an error.
-          alert(`ERROR: ${profile.error}`);
 
+          alert(`ERROR: ${profile.error}`);
           // Reenable the save and cancel buttons, so the user can try again
           saveButton.disabled = false;
           cancelButton.disabled = false;
@@ -201,12 +201,12 @@ function saveProfile(id) {
     saveButton.disabled = false;
   }
 
-
-
 }
+
 
 /**
  * Cancel profile edits and restore the original values
+ * @param {integer} id - the ID of the profile being edited
  */
 
 function cancelProfile(id) {
@@ -219,8 +219,8 @@ function cancelProfile(id) {
 
   // Get the profile's original contents via the API
   fetch(`/users/${id}`, {
-    method: 'GET'
-  })
+      method: 'GET'
+    })
     .then(response => response.json())
     .then(profile => {
 
@@ -254,7 +254,6 @@ function cancelProfile(id) {
       }
 
     });
-
 
 }
 
@@ -294,14 +293,11 @@ function newElement(element, innerHTML, cssClass = null, id = null, value = null
 }
 
 
-
 /**
  * Swap the Edit Profile and Save Profile buttons
  * @param {string} from - the button type to be removed, either 'edit' or 'save' in lowercase
  * @param {string} to - the button type to be added, either 'edit' or 'save' in lowercase
  */
-
-// Future enhancement:  detect the diretion based on which buttons are present on the page
 
 function swapProfileButtons(from, to) {
 

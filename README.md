@@ -103,6 +103,8 @@ TO DO:  technically passing the actual date objects lets us do date-aware stuff.
 ### Passing the request
 A lot of my functions take request as a parameter when it isn't required for the functionality, because it supports @login_required.  ex:  get_cart could doesn't need the request (we could require that the user argument instead of providing a default), but unauthenticated users should not be able to get order data.
 
+### Swap buttons
+Future enhancement:  swapProfileButtons:  detect the direction of the swap depending on which buttons are present on page.  Slightly more robust to remove and 
 
 ### Error messaging
 TO DO:  JS alerts for immediate feedback, in-template messages for persistent
