@@ -158,12 +158,12 @@ PAGE_SIZE = 5
 
 # Provide a link to the Markdown cheat sheet below fields that support Markdown formatting in Django admin
 # NOTE:  to add this support to additional fields in the future, add this to the field's help_text attribute
-MARKDOWN_HELP_TEXT = 'You may use <a href="https://www.markdownguide.org/cheat-sheet/" target="_blank">Markdown</a> to format this field.'
+MARKDOWN_HELP_TEXT = ('You may use <a href="https://www.markdownguide.org/cheat-sheet/" target="_blank">Markdown</a>'
+                      'to format this field.')
 
 
 # ENTER YOUR SCHOOL'S CUSTOMIZATIONS HERE:
-# DEVELOPER NOTE:  Any additional values entered in the future must also be added to context_processors.py if they will be used by Django templates and/or JavaScript
-
+# DEVELOPER NOTE:  Future values must also be added to context_processors.py if used by Django templates and/or JS
 
 # The name of your school
 SCHOOL_NAME = 'Belly Dance Somerville'

@@ -21,22 +21,29 @@ from .models import (
 )
 
 # Inlines - For adding related table data to a model's detail views
+
+
 class LineItemStackedInline(admin.StackedInline):
     model = LineItem
     extra = 0
 
+
 class OfferingTabularInline(admin.TabularInline):
     model = Offering
     extra = 0
+
 
 class VacationTabularInline(admin.TabularInline):
     model = Vacation
     extra = 0
 
 # List views - Customize the list/summary views for a model
+
+
 class LineItemAdmin(admin.ModelAdmin):
     list_display = ('order', 'offering', 'price')
     ordering = ('-id',)
+
 
 class OrderAdmin(admin.ModelAdmin):
     readonly_fields = ('subtotal', 'total')
@@ -44,9 +51,12 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ('student', 'completed', 'subtotal', 'discount', 'total')
     ordering = ('-id',)
 
+
 class OfferingAdmin(admin.ModelAdmin):
-    list_display = ('semester', 'course', 'weekday', 'start_time', 'location', 'spots_left', 'contact_sheet')
-    readonly_fields = ('price', 'offering_dates', 'no_class_dates', 'num_weeks')
+    list_display = ('semester', 'course', 'weekday', 'start_time',
+                    'location', 'spots_left', 'contact_sheet')
+    readonly_fields = ('price', 'offering_dates',
+                       'no_class_dates', 'num_weeks')
 
     # CITATION:  https://stackoverflow.com/a/32220985
     def contact_sheet(self, obj):
@@ -54,16 +64,20 @@ class OfferingAdmin(admin.ModelAdmin):
             reverse('contact_sheet', args=[obj.pk])
         ))
 
+
 class SemesterAdmin(admin.ModelAdmin):
     inlines = [VacationTabularInline, OfferingTabularInline]
     ordering = ('-start_date',)
 
+
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'first_name', 'last_name','email', 'phone')
-    ordering = ('last_name','first_name')
+    list_display = ('username', 'first_name', 'last_name', 'email', 'phone')
+    ordering = ('last_name', 'first_name')
+
 
 class GiftCardAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'amount')
+
 
 # Register your models here.
 admin.site.register(User, UserAdmin)

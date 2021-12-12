@@ -22,7 +22,6 @@ from django.utils import timezone
 from .models import GiftCard, LineItem, Offering, Order, Semester, User
 
 
-
 # FORM CLASSES
 
 class GiftCardForm(forms.Form):
@@ -103,12 +102,13 @@ def register(request):
         accept_terms = request.POST.get('accept-terms', '') == 'on'
 
         # Check for required fields
-        if first == '' or last == '' or email == '' or phone == '' or emergency_first == '' or emergency_last == '' or emergency_email == '' or emergency_phone == '':
+        if (first == '' or last == '' or email == '' or phone == '' or emergency_first == '' or emergency_last == ''
+                or emergency_email == '' or emergency_phone == ''):
             return render(request, 'enrollment/register.html', {
                 'message': 'All fields are required.',
             })
 
-        if accept_terms != True:
+        if accept_terms is not True:
             return render(request, 'enrollment/register.html', {
                 'message': 'You must accept the class policies.',
             })
@@ -238,7 +238,8 @@ def profile_view(request, id):
             # Gather the students' completed enrollments, grouped by semester
             # CITATION:  Passing nested context items:  https://stackoverflow.com/q/6540032
             semesters = Semester.objects.filter(
-                offerings__line_items__order__student=id, offerings__line_items__order__completed__isnull=False).order_by('-start_date').distinct()
+                offerings__line_items__order__student=id,
+                offerings__line_items__order__completed__isnull=False).order_by('-start_date').distinct()
             for semester in semesters:
                 semester.enrollments = LineItem.objects.filter(order__student=id).filter(
                     offering__semester=semester).exclude(order__completed=None)
@@ -371,16 +372,19 @@ def contact_sheet(request, id):
 
 @login_required
 def get_cart(request, user=None, add=False):
-    '''Returns the latest incomplete order for the specified user, merging duplicates, and optionally creating one if it does not already exist'''
+    '''
+    Returns the latest incomplete order for the specified user.
+
+    Merges duplicates, and optionally creates one if it does not already exist'''
 
     # Default to the logged-in user
-    if user == None:
+    if user is None:
         user = request.user
     try:
         cart = Order.objects.get(student=user, completed=None)
     except Order.DoesNotExist:
         # If the user doesn't already have an open cart, create one
-        if add == True:
+        if add is True:
             cart = Order(student=user)
             cart.save()
         else:
@@ -395,7 +399,7 @@ def merge_carts(request, user=None):
     '''If a user has multiple open carts, merges them into one'''
 
     # Default to the requestor
-    if user == None:
+    if user is None:
         user = request.user
     # Only staff can merge other users' carts
     if request.user != user and not request.user.is_staff:
@@ -441,7 +445,7 @@ def update_cart(request, id):
 
         # Validate the item
         validation = validate_item(request, offering, request.user, 'add')
-        if validation != None:
+        if validation is not None:
             return JsonResponse({'error': validation}, status=400)
 
         # If the user doesn't already have an open order, create a new one
@@ -525,14 +529,14 @@ def checkout(request, id):
 
         if request.method == 'GET':
             # If the cart isn't completed, validate the items, then load the preview with a payment form and profile
-            if cart.completed == None:
+            if cart.completed is None:
                 message = validate_checkout(request, id)
                 if cart.student != request.user:
                     cart = None
                 else:
                     payment_form = GiftCardForm(initial={'total': cart.total})
                     profile = authorized_get_profile(request, cart.student.id)
-            # If the cart is completed, check that the user is authorized (since we're not validating cart) and show the confirmation page
+            # If the cart is completed, check if authorized (since we're not validating) and show the confirmation page
             else:
                 payment_form = None
                 if cart.student != request.user and not request.user.is_staff:
@@ -543,7 +547,7 @@ def checkout(request, id):
         elif request.method == 'POST':
             # Revalidate the cart, in case it has become invalid since the preview screen was loaded
             message = validate_checkout(request, id)
-            if message == None:
+            if message is None:
                 # Validate payment and submit the order
                 paid = pay(request)
                 if paid:
@@ -586,7 +590,7 @@ def validate_checkout(request, id):
         return 'You are not authorized to access carts belonging to another user.'
 
     # Make sure we're not trying to check out an order that has already been completed
-    if cart.completed != None:
+    if cart.completed is not None:
         return 'This cart has already been checked out.'
 
     # Make sure the cart is not empty
@@ -598,8 +602,9 @@ def validate_checkout(request, id):
     # Validate each line item again, removing any invalid items from the cart
     removed_list = []
     for line_item in line_items:
-        error = validate_item(request, line_item.offering, cart.student, 'checkout')
-        if error != None:
+        error = validate_item(request, line_item.offering,
+                              cart.student, 'checkout')
+        if error is not None:
             # Record the item name and error
             removed_list.append(f'{line_item.offering.course.title}: {error}')
             # Remove the invalid item from the cart
@@ -622,7 +627,8 @@ def pay(request):
         if form.is_valid():
             try:
                 card = GiftCard.objects.get(
-                    card_number=form.cleaned_data['card_number'], month=form.cleaned_data['month'], year=form.cleaned_data['year'], pin=form.cleaned_data['pin'])
+                    card_number=form.cleaned_data['card_number'], month=form.cleaned_data['month'],
+                    year=form.cleaned_data['year'], pin=form.cleaned_data['pin'])
             except GiftCard.DoesNotExist:
                 return False
 

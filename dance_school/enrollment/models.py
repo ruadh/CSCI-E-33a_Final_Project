@@ -34,7 +34,7 @@ def weekdays_in_range(start, end, weekday):
         return None
     diff = weekday - start.weekday()
     if diff < 0:
-        diff+=7
+        diff += 7
     date = start + timedelta(days=diff)
     dates = []
     while start <= date <= end:
@@ -72,7 +72,8 @@ class User(AbstractUser):
 
     # CITATION:     Adapted from provided models.py in Project 3
     def serialize_editable(self):
-        """Returns a JSON object containing the user's editable profile fields with dashes instead of underscores in names"""
+        '''Returns a JSON object with user's editable profile fields with dashes instead of underscores in names'''
+
         profile = {}
         for field in settings.EDITABLE_USER_FIELDS:
             profile[field.replace('_', '-')] = getattr(self, field)
@@ -105,7 +106,8 @@ class Semester(models.Model):
     # CITATION:  https://stackoverflow.com/a/54011108
     def clean(self):
         # Clean is applied before required fields are checked, so we have to double-check here
-        if self.start_date != None and self.end_date != None and self.registration_open != None and self.registration_close != None:
+        if (self.start_date is not None and self.end_date is not None and self.registration_open is not None
+                and self.registration_close is not None):
             if self.start_date >= self.end_date:
                 raise ValidationError(
                     'Start date must be earlier than end date')
@@ -151,7 +153,8 @@ class Offering(models.Model):
     location = models.ForeignKey(
         Location, on_delete=PROTECT, null=False, blank=False, related_name='offerings')
     # Store the hourly rate on creation
-    hourly_rate = models.DecimalField(max_digits=5, decimal_places=2, default=settings.HOURLY_RATE, null=False, blank=False)
+    hourly_rate = models.DecimalField(
+        max_digits=5, decimal_places=2, default=settings.HOURLY_RATE, null=False, blank=False)
     price_override = models.DecimalField(
         max_digits=7, decimal_places=2, null=True, blank=True)
     weekday = models.IntegerField(
@@ -185,14 +188,16 @@ class Offering(models.Model):
         vacations = Vacation.objects.filter(semester=self.semester)
         dates = []
         for vacation in vacations:
-            dates.extend(weekdays_in_range(vacation.start_date, vacation.end_date, self.weekday))
+            dates.extend(weekdays_in_range(vacation.start_date,
+                                           vacation.end_date, self.weekday))
         return dates if len(dates) > 0 else []
 
     @property
     def offering_dates(self):
         # Store the no class dates, so we don't call it repeatedly in the list comprehension
         no_class = self.no_class_dates
-        all_dates = weekdays_in_range(self.start_date, self.end_date, self.weekday)
+        all_dates = weekdays_in_range(
+            self.start_date, self.end_date, self.weekday)
         dates = [dt for dt in all_dates if dt not in no_class]
         return dates if len(dates) > 0 else []
 
@@ -212,15 +217,19 @@ class Offering(models.Model):
 
     @property
     def price(self):
-        diff = timedelta(hours=self.end_time.hour, minutes=self.end_time.minute) - timedelta(hours=self.start_time.hour, minutes=self.start_time.minute) 
+        diff = timedelta(hours=self.end_time.hour, minutes=self.end_time.minute) - \
+            timedelta(hours=self.start_time.hour,
+                      minutes=self.start_time.minute)
         hours = diff.seconds / 3600
-        calc_price = round(self.hourly_rate * self.num_weeks * decimal.Decimal(hours), 2)
+        calc_price = round(self.hourly_rate *
+                           self.num_weeks * decimal.Decimal(hours), 2)
         return calc_price
 
     # CITATION:  https://stackoverflow.com/a/54011108
     def clean(self):
         # Clean is applied before required fields are checked, so we have to double-check that they are present here
-        if self.start_date != None and self.end_date != None and self.start_time != None and self.end_time != None and self.backup_class != None:
+        if (self.start_date is not None and self.end_date is not None and self.start_time is not None and
+                self.end_time is not None and self.backup_class is not None):
             if self.start_date >= self.end_date:
                 raise ValidationError(
                     'Start date must be earlier than end date')
@@ -249,18 +258,18 @@ class Order(models.Model):
             amount = self.line_items.aggregate(Sum('price'))['price__sum']
         except Exception:
             return 0
-        return 0 if amount == None else amount
+        return 0 if amount is None else amount
 
     @property
     def total(self):
-        return self.subtotal - self.discount if self.discount != None else self.subtotal
+        return self.subtotal - self.discount if self.discount is not None else self.subtotal
 
     @property
     def semester(self):
         return self.line_items.first().offering.semester.name
 
     def __str__(self):
-        if self.completed == None:
+        if self.completed is None:
             date_string = 'incomplete'
         else:
             date_string = self.completed.strftime("%x %X")
@@ -307,11 +316,11 @@ class Vacation(models.Model):
     start_date = models.DateField(null=False, blank=False)
     end_date = models.DateField(null=False, blank=False)
 
-
     # CITATION:  https://stackoverflow.com/a/54011108
+
     def clean(self):
         # Clean is applied before required fields are checked, so we have to double-check here
-        if self.start_date != None and self.end_date != None:
+        if self.start_date is not None and self.end_date is not None:
             if self.start_date > self.end_date:
                 raise ValidationError(
                     'Start date may not be later than end date')
