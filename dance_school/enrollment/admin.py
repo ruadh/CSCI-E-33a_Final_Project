@@ -1,23 +1,29 @@
-from django.contrib import admin
-from django.db.models import fields
-# from django.contrib.auth.admin import UserAdmin
-import pytz
-from django.utils import timezone
-# from django.utils.html import format_html
-from django.utils.safestring import mark_safe  
-from django.urls import reverse
-from django.conf import settings
-from .models import User, Semester, Course, Offering, Location, LineItem, Order, GiftCard, Vacation
+'''Admin area customizations for the Enrollment app in Django project Dance School'''
 
-# TO DO:  Figure out local time zones...
-# timezone.activate(pytz.timezone(settings.DEFAULT_TIMEZONE))
-# timezone.activate('America/New_York')
+# CITATION:     Import sorting by iSort, as recommended by the Django contributors documentation:
+#               https://github.com/PyCQA/isort#readme
+
+from django.conf import settings
+from django.contrib import admin
+from django.urls import reverse
+from django.utils.safestring import mark_safe
+
+from .models import (
+    Course,
+    GiftCard,
+    LineItem,
+    Location,
+    Offering,
+    Order,
+    Semester,
+    User,
+    Vacation,
+)
 
 # Inlines - For adding related table data to a model's detail views
 class LineItemStackedInline(admin.StackedInline):
     model = LineItem
-    # TO DO:  Decide how many slots should be addable at a time
-    # extra = 1
+    extra = 0
 
 class OfferingTabularInline(admin.TabularInline):
     model = Offering

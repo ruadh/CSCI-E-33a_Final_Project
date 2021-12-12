@@ -1,6 +1,8 @@
 # CSCI-E-33a_Final Project
 Harvard Extension School CSCI E-33a "Web Programming with Python and JavaScript" Final Project
 
+NOTE:  This readme is part of a draft version of my project.  I'm planning to resubmit the final version later today, but since I will be on the road for part of the day, I wanted to make sure I got something in before the deadline.  Hopefully you're not reading this.
+
 ## TO DO:
 include a full write-up describing your project, what’s contained in each file you created, why you made certain design decisions, and any other additional information the staff should know about your project.
 
@@ -31,7 +33,7 @@ Form classes and navigation, API, and utility functions in Python.
 Customizations to the Django admin area, which is where most administrator tasks occur.
 
 ### enrollment.js
-JavaScript for BLAH
+JavaScript for the front-end.  
 
 ### styles.css
 This application mostly uses Bootstrap styles.  This file contains a small amount of CSS for adding to or modifying those styles.
@@ -101,6 +103,9 @@ TO DO:  technically passing the actual date objects lets us do date-aware stuff.
 ### Passing the request
 A lot of my functions take request as a parameter when it isn't required for the functionality, because it supports @login_required.  ex:  get_cart could doesn't need the request (we could require that the user argument instead of providing a default), but unauthenticated users should not be able to get order data.
 
+
+### Error messaging
+TO DO:  JS alerts for immediate feedback, in-template messages for persistent
 
 ### Cart Validation
 I decided to block/remove invalid cart items only when the user is intending to interact with the cart:  adding an item, proceeding to checkout, processing checkout.  I decided NOT to run the validation when loading the cart preview on index.html, since that will often happen when the user is trying to do something else (load the class list, browse to another page, etc.).  So removing items and showing an error message related that isn't related to their intended task would be confusing.

@@ -1,22 +1,26 @@
-from django.contrib.auth.decorators import login_required
-from datetime import datetime
-from django.http.request import HttpRequest
-from django.http.response import HttpResponse
+'''Python code for the Enrollment app in Django project Dance School'''
+
+# CITATION:     Import sorting by iSort, as recommended by the Django contributors documentation:
+#               https://github.com/PyCQA/isort#readme
+
 import json
+from datetime import datetime
+
 import pytz
 from django import forms
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db import IntegrityError
+from django.db.models import Count
 from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
-from django.db.models import Count
-from markdown2 import Markdown
 
-from .models import GiftCard, Offering, Order, User, Semester, Location, Course, LineItem
+from .models import GiftCard, LineItem, Offering, Order, Semester, User
+
 
 
 # FORM CLASSES

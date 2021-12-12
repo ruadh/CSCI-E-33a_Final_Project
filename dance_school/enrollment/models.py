@@ -1,14 +1,20 @@
-from django.db.models.deletion import PROTECT
-import pytz
-from datetime import date, datetime, timedelta
-from django.utils import timezone
-from django.conf import settings
-from django.db import models
-from django.contrib.auth.models import AbstractUser
-from django.db.models import Sum, Count
-from django.core.exceptions import ValidationError
-from markdown2 import Markdown
+'''Models for the Enrollment app in Django project Dance School'''
+
+# CITATION:     Import sorting by iSort, as recommended by the Django contributors documentation:
+#               https://github.com/PyCQA/isort#readme
+
 import decimal
+from datetime import timedelta
+
+import pytz
+from django.conf import settings
+from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.db.models import Count, Sum
+from django.db.models.deletion import PROTECT
+from django.utils import timezone
+from markdown2 import Markdown
 
 
 # CONSTANTS

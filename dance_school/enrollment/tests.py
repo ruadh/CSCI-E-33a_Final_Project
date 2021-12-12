@@ -1,13 +1,22 @@
-from decimal import Decimal
-from django.http.request import HttpRequest
+import unittest
+from datetime import datetime
+
+import pytz
 from django.test import TestCase
 from django.utils import timezone
-from datetime import datetime, date
-import pytz
-import unittest
-from django.contrib.auth.models import User as Us
-from .models import Order, User, Semester, Course, Offering, Location, LineItem, GiftCard
+
+from .models import (
+    Course,
+    GiftCard,
+    LineItem,
+    Location,
+    Offering,
+    Order,
+    Semester,
+    User,
+)
 from .views import *
+
 
 # NOTE TO SELF:  python3 manage.py test enrollment.tests
 
