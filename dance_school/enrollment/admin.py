@@ -3,7 +3,7 @@
 # CITATION:     Import sorting by iSort, as recommended by the Django contributors documentation:
 #               https://github.com/PyCQA/isort#readme
 
-from django.conf import settings
+# from django.conf import settings
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.safestring import mark_safe
@@ -24,28 +24,34 @@ from .models import (
 
 
 class LineItemStackedInline(admin.StackedInline):
+    '''Adds an inline for managing related line items'''
     model = LineItem
     extra = 0
 
 
 class OfferingTabularInline(admin.TabularInline):
+    '''Adds an inline for managing related offerings'''
     model = Offering
     extra = 0
 
 
 class VacationTabularInline(admin.TabularInline):
+    '''Adds an inline for managing related vacation date spans'''
     model = Vacation
     extra = 0
+
 
 # List views - Customize the list/summary views for a model
 
 
 class LineItemAdmin(admin.ModelAdmin):
+    '''Primary admin area for line items'''
     list_display = ('order', 'offering', 'price')
     ordering = ('-id',)
 
 
 class OrderAdmin(admin.ModelAdmin):
+    '''Primary admin area for orders'''
     readonly_fields = ('subtotal', 'total')
     inlines = [LineItemStackedInline]
     list_display = ('student', 'completed', 'subtotal', 'discount', 'total')
@@ -53,6 +59,7 @@ class OrderAdmin(admin.ModelAdmin):
 
 
 class OfferingAdmin(admin.ModelAdmin):
+    '''Primary admin area for offerings'''
     list_display = ('semester', 'course', 'weekday', 'start_time',
                     'location', 'spots_left', 'contact_sheet')
     readonly_fields = ('price', 'offering_dates',
@@ -60,22 +67,26 @@ class OfferingAdmin(admin.ModelAdmin):
 
     # CITATION:  https://stackoverflow.com/a/32220985
     def contact_sheet(self, obj):
+        '''Provides a link to the contact sheet URL for the current offering'''
         return mark_safe('<a href="{}">Contact Sheet</a>'.format(
             reverse('contact_sheet', args=[obj.pk])
         ))
 
 
 class SemesterAdmin(admin.ModelAdmin):
+    '''Primary admin area for semesters'''
     inlines = [VacationTabularInline, OfferingTabularInline]
     ordering = ('-start_date',)
 
 
 class UserAdmin(admin.ModelAdmin):
+    '''Primary admin area for users/students'''
     list_display = ('username', 'first_name', 'last_name', 'email', 'phone')
     ordering = ('last_name', 'first_name')
 
 
 class GiftCardAdmin(admin.ModelAdmin):
+    '''Primary admin area for gift cards'''
     list_display = ('__str__', 'amount')
 
 

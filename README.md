@@ -113,6 +113,7 @@ TO DO:  JS alerts for immediate feedback, in-template messages for persistent
 I decided to block/remove invalid cart items only when the user is intending to interact with the cart:  adding an item, proceeding to checkout, processing checkout.  I decided NOT to run the validation when loading the cart preview on index.html, since that will often happen when the user is trying to do something else (load the class list, browse to another page, etc.).  So removing items and showing an error message related that isn't related to their intended task would be confusing.
 
 
+
 ### Profile update form
 
 #### Faux form approach

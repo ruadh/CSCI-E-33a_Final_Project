@@ -147,8 +147,6 @@
                     </div>
                     <div id="collapse{{order.id}}" class="collapse" aria-labelledby="heading{{order.id}}" data-parent="#order-accordion">
                         <div class="card-body">
-                            {# CITATION:  Accessing values in a list item https://stackoverflow.com/a/1479236 #}
-                            <h4 class="card-title">{{order.items.0.offering.semester}}</h4>
                             {% for item in order.items %}
                                 <ul>
                                     <li>{{item.offering.course.title}} {{item.offering.weekday_name}} ${{item.price|floatformat:2}}
