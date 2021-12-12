@@ -42,7 +42,6 @@ function addToCart(id) {
     .then(lineItem => {
 
       if (lineItem.error == undefined) {
-        // Django pagination keeps us on the same screen after a reload
         location.reload();
       } else {
         alert(lineItem.error);
@@ -78,7 +77,6 @@ function removeFromCart(id) {
     .then(lineItem => {
 
       if (lineItem.error == undefined) {
-        // Django pagination keeps us on the same screen after a reload
         location.reload();
       } else {
         alert(lineItem.error);
@@ -105,15 +103,15 @@ function profileForm() {
 
   // Disable the cart submit button, if present  (Again: using querySelectorAll to gracefully handle missing elements)
   document.querySelectorAll('#submit-cart-button').forEach(button => {
-    button.setAttribute('disabled', 'disabled')
+    button.setAttribute('disabled', 'disabled');
   });
 
   // Replace the contents of each editable value with an input, populated with the current value
   document.querySelectorAll('.editable .value').forEach(field => {
     const fieldValue = field.innerHTML;
     field.innerHTML = '';
-    const child = newElement('input', null, 'value', field.id, fieldValue, field)
-  })
+    newElement('input', null, 'value', field.id, fieldValue, field);
+  });
 
   // Replace the edit button with a Save button
   swapProfileButtons('edit', 'save');
@@ -147,7 +145,7 @@ function saveProfile(id) {
     } else {
       body[field.id] = field.value.trim();
     }
-  })
+  });
 
 
   if (errorCt == 0) {
@@ -170,11 +168,9 @@ function saveProfile(id) {
           // Replace the pseudo-form with the updated profile contents
           // CITATION: https://stackoverflow.com/a/34913701/15100723
           for (const [fieldName, fieldValue] of Object.entries(profile)) {
-
             // Replace the contents of each input with its updated value, as returned from the API
             const input = document.querySelector(`#${fieldName}`);
-            const child = newElement('span', fieldValue, 'value', fieldName, null, input)
-
+            newElement('span', fieldValue, 'value', fieldName, null, input);
           }
 
           // Replace the save button with an edit button
@@ -182,7 +178,7 @@ function saveProfile(id) {
 
           // Reenable the submit cart button, if present  (Again: using querySelectorAll to gracefully handle missing elements)
           document.querySelectorAll('#submit-cart-button').forEach(button => {
-            button.removeAttribute('disabled')
+            button.removeAttribute('disabled');
           });
 
 
@@ -234,12 +230,9 @@ function cancelProfile(id) {
         // Replace the pseudo-form with the retrieved profile contents
         // CITATION: https://stackoverflow.com/a/34913701/15100723
         for (const [fieldName, fieldValue] of Object.entries(profile)) {
-
-          // TO DO:  Refactor to use helper function?
           // Replace the contents of each input with its original value, as returned from the API
           const input = document.querySelector(`#${fieldName}`);
-          const child = newElement('span', fieldValue, 'value', fieldName, null, input)
-
+          newElement('span', fieldValue, 'value', fieldName, null, input);
         }
 
         // Replace the save button with an edit button
@@ -247,7 +240,7 @@ function cancelProfile(id) {
 
         // Reenable the submit cart button, if present  (Again: using querySelectorAll to gracefully handle missing elements)
         document.querySelectorAll('#submit-cart-button').forEach(button => {
-          button.removeAttribute('disabled')
+          button.removeAttribute('disabled');
         });
 
 
@@ -288,14 +281,14 @@ function newElement(element, innerHTML, cssClass = null, id = null, value = null
     });
     if (id !== null) {
       child.id = id;
-    };
+    }
     if (value !== null) {
       child.value = value;
-    };
+    }
     if (replaces !== null) {
       replaces.after(child);
       replaces.remove();
-    };
+    }
   }
   return child;
 }
