@@ -53,6 +53,11 @@
     </div>
     {% endif %}
 
+    <!-- Dummy form to provide CSRF token for JS scripts -->
+    <form>
+        {% csrf_token %}
+    </form>
+
     <!-- Content brought in from templates -->
     {% block body %}
     {% endblock %}

@@ -41,12 +41,7 @@
                 <h4>No items in your cart.</h4>
             {% endif %}
             <!-- Include the form to supply the CSRF token, but hide the Checkout button if there are no items -->
-            <form action="
-                {% if cart %} 
-                    {% url 'order' cart.id %}
-                {% endif %}
-            " method="GET" class="">
-                {% csrf_token %}
+            <form action="{% if cart %} {% url 'order' cart.id %} {% endif %}" method="GET" class="">
                 {% if cart.items %}
                     <input type="submit" value="Checkout" class="btn btn-primary">
                 {% endif %}

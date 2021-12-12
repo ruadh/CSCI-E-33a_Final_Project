@@ -1,6 +1,9 @@
 # CSCI-E-33a_Final Project
 Harvard Extension School CSCI E-33a "Web Programming with Python and JavaScript" Final Project
 
+## TO DO:
+include a full write-up describing your project, what’s contained in each file you created, why you made certain design decisions, and any other additional information the staff should know about your project.
+
 ## About this project
 
 ## What each file does
