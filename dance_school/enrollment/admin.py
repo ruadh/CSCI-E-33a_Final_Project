@@ -50,6 +50,7 @@ class OfferingAdmin(admin.ModelAdmin):
 
 class SemesterAdmin(admin.ModelAdmin):
     inlines = [VacationTabularInline, OfferingTabularInline]
+    ordering = ('-start_date',)
 
 class UserAdmin(admin.ModelAdmin):
     list_display = ('username', 'first_name', 'last_name','email', 'phone')

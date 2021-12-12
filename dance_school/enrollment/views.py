@@ -592,6 +592,7 @@ def checkout(request, id):
                 cart = None
             else:
                 payment_form = GiftCardForm(initial={'total': cart.total})
+                profile = authorized_get_profile(request, cart.student.id)
         else:
             message = 'POST or GET request required.'
     finally:

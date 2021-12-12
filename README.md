@@ -57,6 +57,8 @@ I chose to store weekdays as integers instead of as their names, which will supp
 #### Price limits
 Realistically, most class fees will be in the hundreds of dollars, and order totals only occasionally exceed $1,000.  However, I set the max_digits on those fields to support line item prices in the tens of thousands of dollars, and purchase prices in the hundreds of thousands of dollars.  It's always wise to have a "fudge factor", and other schools may have premium offerings or pricing models that require higher amounts.  This also leaves room for future enhancemnts, like allowing registrations for multiple students in a single order (such as a parent and child taking class together).
 
+#### Schedule comments
+Spec says "generate the offering's schedule comments".  I chose to do this as no class dates and separate manual schedule_notes field.
 
 #### Orders' required fields
 A new Order object requires only the student's foreign key because an order/cart is empty when first created.
