@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 });
 
+
 /**
  * Add an offering to the cart
  */
@@ -28,7 +29,6 @@ function addToCart(id) {
   addButton.disabled = true;
 
   // Gather the CSRF token from the Django template
-  // CITATION:  Copied directly from Vlad's section slides
   const token = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
 
   // Add the offering to the cart via the API
@@ -42,11 +42,9 @@ function addToCart(id) {
     .then(lineItem => {
 
       if (lineItem.error == undefined) {
-        // Reload the page
+        // Django pagination keeps us on the same screen after a reload
         location.reload();
       } else {
-        // TO DO:  Add error handling via messages?
-        // document.querySelector('#main-alert-persistent').innerHTML = lineItem.error;
         alert(lineItem.error);
       }
 
@@ -67,7 +65,6 @@ function removeFromCart(id) {
   removeButton.disabled = true;
 
   // Gather the CSRF token from the Django template
-  // CITATION:  Copied directly from Vlad's section slides
   const token = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
 
   // Add the offering to the cart via the API
@@ -81,11 +78,9 @@ function removeFromCart(id) {
     .then(lineItem => {
 
       if (lineItem.error == undefined) {
-        // Reloading the current page works because Django pagination keeps us on the same screen
+        // Django pagination keeps us on the same screen after a reload
         location.reload();
       } else {
-        // TO DO:  Add error handling via messages?
-        // document.querySelector('#main-alert-persistent').innerHTML = lineItem.error;
         alert(lineItem.error);
       }
 
@@ -98,9 +93,9 @@ function removeFromCart(id) {
 
 /**
  * Replace editable profile values with form fields
+ * 
+ * Dependency:  This will only affect elements with class "value" inside a parent element of class "editable"
  */
-
-// TO DO:  write about dependency that element must be value inside editable
 
 function profileForm() {
 
@@ -132,7 +127,6 @@ function profileForm() {
 function saveProfile(id) {
 
   // Gather the CSRF token from the Django template
-  // CITATION:  Copied directly from Vlad's section slides
   const token = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
 
   // Disable the cancel and save buttons, so they can't click repeatedly while waiting
@@ -154,8 +148,8 @@ function saveProfile(id) {
       body[field.id] = field.value.trim();
     }
   })
-  
-  
+
+
   if (errorCt == 0) {
 
     // Update the profile's contents via the API
@@ -258,11 +252,6 @@ function cancelProfile(id) {
 
 
       } else {
-        // TO DO:  Display an alert above the post
-        // DESIGN NOTE:  I'm repeating a queryselector, but I think that's better than storing the object,
-        //               since this block will not usually be executed - only if there's an error.
-        // displayAlert(document.querySelector(`.post-row[data-post="${id}"] .alert`), post.error, 'danger');
-
         alert(`ERROR: ${profile.error}`);
 
         // Reenable the save and cancel buttons, so the user can try again
@@ -314,15 +303,14 @@ function newElement(element, innerHTML, cssClass = null, id = null, value = null
 
 
 /**
- * Helper function:  Swap the Edit Profile and Save Profile buttons
+ * Swap the Edit Profile and Save Profile buttons
  * @param {string} from - the button type to be removed, either 'edit' or 'save' in lowercase
  * @param {string} to - the button type to be added, either 'edit' or 'save' in lowercase
  */
 
-function swapProfileButtons(from, to) {
+// Future enhancement:  detect the diretion based on which buttons are present on the page
 
-  // TO DO:  detect the direction of the swap based on which buttons are on the page
-  // OR:     maybe just accept from and calculate to
+function swapProfileButtons(from, to) {
 
   // Validate the parameters
   if ((from != 'edit' && from != 'save') || (to != 'edit' && to != 'save')) {

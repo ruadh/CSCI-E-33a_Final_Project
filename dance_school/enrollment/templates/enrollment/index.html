@@ -104,7 +104,6 @@
         </div>
 
         <div class="container" id="paginator">
-            {# CITATION:  based on the Vacara example in Vlad's section #}
             <nav role="navigation">
                 <ul class="pagination">
                     {% if page.has_previous %}
@@ -121,7 +120,7 @@
         </div>
 
         {% else %}
-        <div>{{NO_OFFERINGS}}</div>
+        <div class="accordion">{{NO_OFFERINGS}}</div>
         {% endif %}
     </div>
 

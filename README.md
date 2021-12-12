@@ -157,7 +157,9 @@ In several functions, I chose to pass the user as a separate parameter instead o
 
 
 ### Reloading page after add/remove from cart in JS
-TO DO:  refresh page instead of updating all values
+After adding or removing a cart item via JS, I am reloading the page instead of using JS to update the elements on the page.  I would like to do that as a future enhancement, but I think the current behavior is acceptable for now:
+* On the class list page, Django pagination ensures that the user remains on the same page of results
+* On the cart preview page, we do lose any profile updates in progress and payment info entered, but I think that's reasonable since removing an item basically changes  LEFT OFF HERE
 
 
 ## DEPENDENCIES:
@@ -180,7 +182,7 @@ SECRET_KEY = 'a-new-secure-string'
 
 I added comments in my code with the prefix "CITATION:" for code borrowed from outside sources like Stack Overflow, blogs, project starter files, section examples, etc.
 
-I did NOT include citations for code adapted from official documentation (Django, Bootstrap), or when an outside source pointed me to a concept but I wrote my own code from scratch.
+I did NOT include citations for code adapted from official documentation (Django, Bootstrap), or when an outside source pointed me to a concept but I wrote my own code from scratch.  I also did not re-cite simple things that I cited in earlier projects and have now learned as approaches (ex: ternary operators for pluralization, pagination from Vlad's Vancara example in section), unless I am reusing a substantial amount of code (like the login/logout/register functions from starter files0.
 
 
 ## EVALUATION TIPS:

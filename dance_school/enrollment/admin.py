@@ -45,7 +45,7 @@ class OfferingAdmin(admin.ModelAdmin):
     # CITATION:  https://stackoverflow.com/a/32220985
     def contact_sheet(self, obj):
         return mark_safe('<a href="{}">Contact Sheet</a>'.format(
-            reverse("contact_sheet", args=[obj.pk])
+            reverse('contact_sheet', args=[obj.pk])
         ))
 
 class SemesterAdmin(admin.ModelAdmin):

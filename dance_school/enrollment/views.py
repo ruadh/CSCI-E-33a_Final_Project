@@ -29,11 +29,13 @@ class GiftCardForm(forms.Form):
     total = forms.DecimalField(
         max_digits=6, decimal_places=2, required=True, widget=forms.HiddenInput)
 
+
 # AUTHENTICATION
 # CITATION:  Adapted from provided starter files in earlier projects
 
 
 def login_view(request):
+    '''Log in an existing user'''
 
     if request.method == 'POST':
 
@@ -57,6 +59,7 @@ def login_view(request):
 
 
 def logout_view(request):
+    '''Log out the current user'''
 
     logout(request)
     timezone.activate(settings.DEFAULT_TIMEZONE)
@@ -64,6 +67,7 @@ def logout_view(request):
 
 
 def register(request):
+    '''Create a new end user (student) account'''
 
     # Gather a list of timezones to populate the timezone choice field in the form
     timezones = pytz.common_timezones
@@ -134,13 +138,24 @@ def register(request):
         return render(request, 'enrollment/register.html')
 
 
+def set_timezone(request):
+    '''Activates the user's preferred timezone if logged in, or the system default.'''
+    if request.user.is_authenticated:
+        timezone.activate(request.user.timezone)
+    else:
+        timezone.activate(settings.DEFAULT_TIMEZONE)
 
-# NAVIGATION
 
-def index(request, page=None, message=None):
+# Offerings
+
+def index(request, message=None):
+    '''Displays the app's home page with a paginated list of current offerings'''
+
+    # Determine the latest semester
+    semester = latest_semester()
 
     # Add a paginated list of class offerings
-    offerings = Offering.objects.filter(semester=latest_semester()).order_by(
+    offerings = Offering.objects.filter(semester=semester).order_by(
         'course__title', 'weekday', 'start_time'
     )
     page = paginate_offerings(request, offerings)
@@ -153,9 +168,6 @@ def index(request, page=None, message=None):
     else:
         cart = None
 
-    # Pass the latest semester to the template
-    semester = latest_semester()
-
     # Make sure the timezone isn't overriden by a hard reset
     set_timezone(request)
     return render(request, 'enrollment/index.html', {
@@ -166,8 +178,45 @@ def index(request, page=None, message=None):
     })
 
 
+def latest_semester():
+    '''Returns the latest semester that has not been marked hidden, regardless of whether registration is open.'''
+
+    try:
+        semester = Semester.objects.filter(hide=False).latest('start_date')
+    except Semester.DoesNotExist:
+        return None
+    return semester
+
+
+def current_offerings(request):
+    '''Returns all offerings for the current semester'''
+
+    semester = latest_semester()
+    try:
+        offerings = Offering.objects.filter(semester=semester)
+    except Offering.DoesNotExist:
+        return None
+    return offerings
+
+
+def paginate_offerings(request, offerings):
+    '''Return the first page of a pagainted list of offerings'''
+
+    if offerings is None:
+        page = None
+    else:
+        page_num = request.GET.get('page', 1)
+        paginator = Paginator(offerings, settings.PAGE_SIZE)
+        page = paginator.page(page_num)
+    return page
+
+
+# PROFILES
+
 @login_required
 def profile_view(request, id):
+    '''Display the user profile page, if authorized'''
+
     # Make sure the timezone isn't overridden by a hard reset
     set_timezone(request)
 
@@ -182,9 +231,7 @@ def profile_view(request, id):
                     'message': f'User {id} not found.'
                 })
 
-            # Prepare the items to pass to the Django template:
-
-            # Pass the students' completed enrollments, grouped by semester
+            # Gather the students' completed enrollments, grouped by semester
             # CITATION:  Passing nested context items:  https://stackoverflow.com/q/6540032
             semesters = Semester.objects.filter(
                 offerings__line_items__order__student=id, offerings__line_items__order__completed__isnull=False).order_by('-start_date').distinct()
@@ -192,7 +239,7 @@ def profile_view(request, id):
                 semester.enrollments = LineItem.objects.filter(order__student=id).filter(
                     offering__semester=semester).exclude(order__completed=None)
 
-            # Pass the order history, including nested line items
+            # Gather their order history, including nested line items
             orders = completed_orders(request, id).order_by('-completed')
             for order in orders:
                 order.items = order.line_items.all()
@@ -214,9 +261,14 @@ def profile_view(request, id):
         })
 
 
-# API access to profiles
 @login_required
 def profile(request, id):
+    '''
+    Retrieve or update a user's editable profile fields via the API
+
+    Note: The list of editable fields is EDITABLE_USER_FIELDS in settings.py
+    '''
+
     if request.method != 'POST' and request.method != 'GET':
         return JsonResponse({'error': 'GET or POST method required.'}, status=400)
     else:
@@ -248,18 +300,46 @@ def profile(request, id):
             user.save()
 
         # Return the updated profile's editable fields
-        return JsonResponse(user.serialize_editable(), status=200)            
-
+        return JsonResponse(user.serialize_editable(), status=200)
 
 
 @login_required
+def authorized_get_profile(request, id):
+    '''Returns profile object (not page) only if you are its owner or a staff user'''
+
+    # Make sure the profile exists
+    try:
+        profile = User.objects.get(pk=id)
+    except User.DoesNotExist:
+        profile = None
+    # Return it only if it is being requested by the owner or a staff user
+    else:
+        if profile != request.user and not request.user.is_staff:
+            profile = None
+    finally:
+        return profile
+
+
+@login_required
+def completed_orders(request, user):
+    '''Returns a queryset of completed orders for a given user, who may not be the requestor'''
+    try:
+        orders = Order.objects.filter(student=user).exclude(completed=None)
+    except Order.DoesNotExist:
+        return None
+    return orders
+
+
+# CONTACT SHEET
+
+@login_required
 def contact_sheet(request, id):
-    # TO DO:  clarify that id is the offering id in the docstring
+    '''Displays the contact sheet page for a single offering "id" '''
 
     # Make sure the timezone isn't overriden by a hard reset
     set_timezone(request)
 
-    # Only available for non-admin users
+    # Restrict to admin users
     if request.user.is_staff:
         try:
             offering = Offering.objects.get(id=id)
@@ -268,7 +348,7 @@ def contact_sheet(request, id):
             students = None
         try:
             students = User.objects.filter(
-                orders__line_items__offering=offering).order_by('last_name','first_name')
+                orders__line_items__offering=offering).order_by('last_name', 'first_name')
         except User.DoesNotExist:
             students = None
         return render(request, 'enrollment/contact-sheet.html', {
@@ -281,68 +361,22 @@ def contact_sheet(request, id):
             'message': 'You are not authorized to view this page'
         })
 
-# UTILITY
 
-# Returns the latest semester that is not in hidden mode
-# NOTE:  This WILL return the semester after registration is closed.  That's intentional.
-
-
-def latest_semester():
-    try:
-        semester = Semester.objects.filter(hide=False).latest('start_date')
-    except Semester.DoesNotExist:
-        return None
-    return semester
-
-
-def current_offerings(request):
-    semester = latest_semester()
-    try:
-        offerings = Offering.objects.filter(semester=semester)
-    except Offering.DoesNotExist:
-        return None
-    return offerings
-
-
-def paginate_offerings(request, offerings):
-    # CITATION:  Adapted from Vancara example project in Vlad's section
-    # Make sure there are posts before we try to paginate them
-    if offerings is None:
-        page = None
-    else:
-        page_num = request.GET.get('page', 1)
-        paginator = Paginator(offerings, settings.PAGE_SIZE)
-        page = paginator.page(page_num)
-    return page
-
-
-# All completed orders for a given user
-# NOTE:  the user we're intersted in may not be the requestor
-
-@login_required
-def completed_orders(request, user):
-    try:
-        orders = Order.objects.filter(student=user).exclude(completed=None)
-    except Order.DoesNotExist:
-        return None
-    return orders
+# CART MANAGEMENT
 
 
 @login_required
-# Get the latest incomplete order for a given user, (i.e., their current cart), or optionally create one
-# NOTE:  The UI should enforce no more than one incomplete cart, but if they do, we're only interested in the latest
 def get_cart(request, user=None, add=False):
+    '''Returns the latest incomplete order for the specified user, merging duplicates, and optionally creating one if it does not already exist'''
 
     # Default to the logged-in user
     if user == None:
         user = request.user
     try:
         cart = Order.objects.get(student=user, completed=None)
-        # cart = Order.objects.get(student=request.user, completed=None)
     except Order.DoesNotExist:
         # If the user doesn't already have an open cart, create one
         if add == True:
-            # cart = Order(student=request.user)
             cart = Order(student=user)
             cart.save()
         else:
@@ -352,16 +386,17 @@ def get_cart(request, user=None, add=False):
     return cart
 
 
-# Merge duplicate incomplete carts
 @login_required
 def merge_carts(request, user=None):
+    '''If a user has multiple open carts, merges them into one'''
+
     # Default to the requestor
     if user == None:
         user = request.user
     # Only staff can merge other users' carts
     if request.user != user and not request.user.is_staff:
         return None
-    # This should only be called when multiple carts are present, but double-check anyway
+    # Gather the user's open carts, creating a new one if none found
     try:
         carts = Order.objects.filter(student=user, completed=None)
     except Order.DoesNotExist:
@@ -384,42 +419,23 @@ def merge_carts(request, user=None):
     return primary
 
 
-# Validate a line item before adding to cart or checking out
-# Action = 'add' or 'checkout'
-@login_required
-def validate_item(request, offering, user, action):
-    # See if the user is already registered for this offering
-    reg = LineItem.objects.filter(order__student=user, offering=offering)
-    if reg.exclude(order__completed=None).aggregate(Count('id'))['id__count']:
-        error = f'You are already registered for {offering.course.title} in {offering.semester}.'
-    # See if this offering is already in the user's cart
-    elif action == 'add' and reg.aggregate(Count('id'))['id__count'] > 0:
-        error = f'{offering.course.title} is already in your cart.'
-    # Make sure we're in the registration period (also enforced by UI)
-    elif offering.semester.registration_open > datetime.now(timezone.utc):
-        error = f'Registration for {offering.semester} is not yet open.'
-    elif offering.semester.registration_close < datetime.now(timezone.utc):
-        error = f'Registration is already closed for {offering.semester}.'
-    # Make sure space is still available in the class
-    elif offering.spots_left < 1:
-        error = f'This offering is full.'
-    else:
-        return None
-    return error
-
-
-# API
-
-# Add or remove a line item in the cart
 @login_required
 def update_cart(request, id):
+    '''
+    Add or remove a line item from a cart via the API
+
+    Note:  the id argument refers to the offering to add during a POST, but the line item ID during a DELETE
+    '''
+
     if request.method == 'POST':
+
+        # Check the offering
         try:
             offering = Offering.objects.get(pk=id)
         except Offering.DoesNotExist:
             return JsonResponse({'error': 'Offering not found'}, status=400)
 
-        # Validate
+        # Validate the item
         validation = validate_item(request, offering, request.user, 'add')
         if validation != None:
             return JsonResponse({'error': validation}, status=400)
@@ -452,96 +468,43 @@ def update_cart(request, id):
         return JsonResponse({'error': 'POST request required'}, status=400)
 
 
-# Validate the cart and remove any invalid items
 @login_required
-# TO DO:  Note that ID is the order ID
-def validate_checkout(request, id):
-    try:
-        cart = Order.objects.get(pk=id)
-    except Order.DoesNotExist:
-        return f'Order {id} not found'
+def validate_item(request, offering, user, action):
+    '''
+    Validate a line item
 
-    # Restrict checkout to the cart's owner
-    if cart.student != request.user:
-        return 'You are not authorized to access carts belonging to another user.'
-
-    # Make sure we're not trying to check out an order that has already been completed (ex: via URL)
-    if cart.completed != None:
-        return 'This cart has already been checked out.'
-
-    # Make sure the cart is not empty
-    try:
-        line_items = LineItem.objects.filter(order=id)
-    except LineItem.DoesNotExist:
-        return f'Cart {cart.id} is empty.'
-
-    # Validate each line item again, removing any invalid items from the cart
-    removed_list = []
-    for line_item in line_items:
-        error = validate_item(request, line_item.offering,
-                              cart.student, 'checkout')
-        if error != None:
-            # Track a list of items and errors for the message
-            removed_list.append(f'{line_item.offering.course.title}: {error}')
-            # Also remove it from the cart
-            line_item.delete()
-
-    # Return a list of any items that have been removed from the cart
-    removed_ct = len(removed_list)
-    if removed_ct > 0:
-        removed_list_delimited = '\n'.join(removed_list)
-        return f'{removed_ct} item{"" if removed_ct == 1 else "s"} removed from cart: \n{removed_list_delimited}'
-
-    return None
-
-
-# Validate payment
-@login_required
-def pay(request):
-    if request.method == 'POST':
-        form = GiftCardForm(request.POST)
-        if form.is_valid():
-            try:
-                card = GiftCard.objects.get(
-                    card_number=form.cleaned_data['card_number'], month=form.cleaned_data['month'], year=form.cleaned_data['year'], pin=form.cleaned_data['pin'])
-            except GiftCard.DoesNotExist:
-                return False
-
-            # Check that the gift card balance is enough to cover the cart total
-            total = form.cleaned_data['total']
-            if card.amount < total:
-                return False
-            else:
-                # Deduct the total from the gift card balance
-                card.amount -= total
-                card.save()
-                return True
-
-# Helper function:  Get profile only if you are its owner or a staff user
-
-
-@login_required
-def authorized_get_profile(request, id):
-    try:
-        profile = User.objects.get(pk=id)
-    except User.DoesNotExist:
-        profile = None
+    Note: action ("add" or "checkout") controls which validations are applied
+    '''
+    # See if the user is already registered for this offering
+    reg = LineItem.objects.filter(order__student=user, offering=offering)
+    if reg.exclude(order__completed=None).aggregate(Count('id'))['id__count']:
+        error = f'You are already registered for {offering.course.title} in {offering.semester}.'
+    # See if this offering is already in the user's cart (add to cart only)
+    elif action == 'add' and reg.aggregate(Count('id'))['id__count'] > 0:
+        error = f'{offering.course.title} is already in your cart.'
+    # Make sure we're in the registration period (also enforced by UI)
+    elif offering.semester.registration_open > datetime.now(timezone.utc):
+        error = f'Registration for {offering.semester} is not yet open.'
+    elif offering.semester.registration_close < datetime.now(timezone.utc):
+        error = f'Registration is already closed for {offering.semester}.'
+    # Make sure space is still available in the class
+    elif offering.spots_left < 1:
+        error = f'This offering is full.'
     else:
-        # Return it only if it is being requested by the owner or a staff user
-        if profile != request.user and not request.user.is_staff:
-            profile = None
-    finally:
-        return profile
+        return None
+    return error
 
 
-# Preview, submit, or view completed cart
+# CHECKOUT
+
 @login_required
 def checkout(request, id):
+    '''Preview or submit incomplete cart "id", or view a completed order'''
 
     # Make sure the timezone isn't overriden by a hard reset
     set_timezone(request)
 
-    # Default behavior:  no payment form or update profile pseudo-form (Will be added below if needed)
+    # Default behavior:  no payment update profile forms
     payment_form = None
     profile = None
 
@@ -587,7 +550,7 @@ def checkout(request, id):
                     payment_form = GiftCardForm(initial={'total': cart.total})
                     profile = authorized_get_profile(request, cart.student.id)
                     message = 'Payment declined.  Please try again.'
-            # If someone manages to post a cart they don't own, don't render the cart or payment form
+            # If someone is trying to post a cart they don't own, don't render the cart or payment form
             elif cart.student != request.user:
                 cart = None
             else:
@@ -604,9 +567,67 @@ def checkout(request, id):
             'profile': profile
         })
 
-# Helper function:  set timezone
-def set_timezone(request):
-    if request.user.is_authenticated:
-        timezone.activate(request.user.timezone)
-    else:
-        timezone.activate(settings.DEFAULT_TIMEZONE)
+
+@login_required
+def validate_checkout(request, id):
+    '''Validate order "ID" and remove any invalid items'''
+
+    try:
+        cart = Order.objects.get(pk=id)
+    except Order.DoesNotExist:
+        return f'Order {id} not found'
+
+    # Restrict checkout to the cart's owner
+    if cart.student != request.user:
+        return 'You are not authorized to access carts belonging to another user.'
+
+    # Make sure we're not trying to check out an order that has already been completed
+    if cart.completed != None:
+        return 'This cart has already been checked out.'
+
+    # Make sure the cart is not empty
+    try:
+        line_items = LineItem.objects.filter(order=id)
+    except LineItem.DoesNotExist:
+        return f'Cart {cart.id} is empty.'
+
+    # Validate each line item again, removing any invalid items from the cart
+    removed_list = []
+    for line_item in line_items:
+        error = validate_item(request, line_item.offering, cart.student, 'checkout')
+        if error != None:
+            # Record the item name and error
+            removed_list.append(f'{line_item.offering.course.title}: {error}')
+            # Remove the invalid item from the cart
+            line_item.delete()
+
+    # Return a list of any items that have been removed from the cart
+    removed_ct = len(removed_list)
+    if removed_ct > 0:
+        removed_list_delimited = '\n'.join(removed_list)
+        return f'{removed_ct} item{"" if removed_ct == 1 else "s"} removed from cart: \n{removed_list_delimited}'
+
+    return None
+
+
+@login_required
+def pay(request):
+    '''Validate the payment form, and deduct from the gift card balance if successful'''
+    if request.method == 'POST':
+        form = GiftCardForm(request.POST)
+        if form.is_valid():
+            try:
+                card = GiftCard.objects.get(
+                    card_number=form.cleaned_data['card_number'], month=form.cleaned_data['month'], year=form.cleaned_data['year'], pin=form.cleaned_data['pin'])
+            except GiftCard.DoesNotExist:
+                return False
+
+            # Check that the gift card balance is enough to cover the cart total
+            total = form.cleaned_data['total']
+            if card.amount < total:
+                return False
+            else:
+                # Deduct the total from the gift card balance
+                card.amount -= total
+                card.save()
+                return True

@@ -86,21 +86,7 @@ class CheckoutTestCase(TestCase):
         l = LineItem.objects.get(id=1)
         self.assertEquals(l.price, 100)
 
-# Order validation
-
-    # Order 1 should pass validation
-    def test_valid_order(self):
-        ord = Order.objects.get(id=1)
-        u = User.objects.get(id=1)
-        # CITATION:  logging in as a user during unit tests:  https://stackoverflow.com/a/47617698/15100723
-        self.client.login(username=u.username, password=u.password)
-        # CITATION:  Force login option:  https://stackoverflow.com/a/68951512/15100723
-        self.client.force_login(u)
-        # TO DO:  Not sure how to pass the request so we can use request.user
-        # valid = validate_checkout(u, ord)
-        valid = u.is_authenticated
-        self.assertTrue(valid)
 
 # Run each of the testing functions
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()

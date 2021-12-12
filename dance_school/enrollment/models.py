@@ -197,12 +197,12 @@ class Offering(models.Model):
     @property
     def offering_dates_text(self):
         # CITATION:  https://stackoverflow.com/a/8722486/15100723
-        return ", ".join(date.strftime("%-m/%-d") for date in self.offering_dates)
+        return ', '.join(date.strftime("%-m/%-d") for date in self.offering_dates)
 
     @property
     def no_class_dates_text(self):
         # CITATION:  https://stackoverflow.com/a/8722486/15100723
-        return ", ".join(date.strftime("%-m/%-d") for date in self.no_class_dates)
+        return ', '.join(date.strftime("%-m/%-d") for date in self.no_class_dates)
 
     @property
     def price(self):
