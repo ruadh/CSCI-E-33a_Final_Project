@@ -93,7 +93,7 @@ class Semester(models.Model):
     end_date = models.DateField(null=False, blank=False)
     registration_open = models.DateTimeField(null=False, blank=False)
     registration_close = models.DateTimeField(null=False, blank=False)
-    recital_date = models.DateTimeField(null=True, blank=True)
+    recital = models.DateTimeField(null=True, blank=True)
     hide = models.BooleanField(default=True, null=True, blank=True)
 
     # CITATION:  https://stackoverflow.com/a/54011108
@@ -156,7 +156,7 @@ class Offering(models.Model):
                                 default=settings.DEFAULT_TIMEZONE)
     start_date = models.DateField(null=False, blank=False)
     end_date = models.DateField(null=False, blank=False)
-    backup_date = models.DateField(null=False, blank=False)
+    backup_class = models.DateTimeField(null=False, blank=False)
     capacity = models.IntegerField(null=False, blank=False)
     schedule_notes = models.CharField(max_length=2048, null=True, blank=True)
     notes = models.CharField(max_length=2048, null=True, blank=True)
@@ -213,15 +213,16 @@ class Offering(models.Model):
 
     # CITATION:  https://stackoverflow.com/a/54011108
     def clean(self):
-        # Clean is applied before required fields are checked, so we have to double-check here
-        if self.start_date != None and self.end_date != None and self.start_time != None and self.end_time != None and self.backup_date != None:
+        # Clean is applied before required fields are checked, so we have to double-check that they are present here
+        if self.start_date != None and self.end_date != None and self.start_time != None and self.end_time != None and self.backup_class != None:
             if self.start_date >= self.end_date:
                 raise ValidationError(
                     'Start date must be earlier than end date')
             if self.start_time >= self.end_time:
                 raise ValidationError(
                     'Start time must be earlier than end time')
-            if self.start_date >= self.backup_date:
+            # Backup dates may be held at any time, on any weekday, so only checking vs. start date
+            if self.start_date >= self.backup_class.date():
                 raise ValidationError(
                     'Backup date must be later than start date')
 

@@ -79,6 +79,10 @@
                         {% if offering.no_class_dates %}
                             <p><span class="label">No Class:  </span>{{offering.no_class_dates_text}}</p>
                         {% endif %}
+                        <p><span class="label">Backup Date:</span>  In the event of a cancellation, we will offer a make-up class on {{offering.backup_class|date:DATE_TIME_FORMAT_NO_YEAR}}.</p>
+                        {% if offering.schedule_notes %}
+                            <p><span class="label">Schedule Notes:  </span>{{offering.schedule_notes}}</p>
+                        {% endif %}
                         {% if offering.semester.registration_status == 'future' %}
                             <p>Registration for this class will open on {{offering.semester.registration_open|date:DATE_TIME_FORMAT_NO_YEAR}}</p>
                         {% elif offering.spots_left < 1 %}

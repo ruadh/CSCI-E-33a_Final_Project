@@ -41,6 +41,9 @@ My attempts at unit testing.  Currently failing at this.  TO DO:  update me
 
 ### TO DO:  TEMPLATES
 
+### register.html
+The student (end user) registration form.  This is based on register.html file provided in Project 4, and expanded to include additional user profile fields.
+
 
 
 ## DESIGN CHOICES:
@@ -54,6 +57,7 @@ I chose to store weekdays as integers instead of as their names, which will supp
 #### Price limits
 Realistically, most class fees will be in the hundreds of dollars, and order totals only occasionally exceed $1,000.  However, I set the max_digits on those fields to support line item prices in the tens of thousands of dollars, and purchase prices in the hundreds of thousands of dollars.  It's always wise to have a "fudge factor", and other schools may have premium offerings or pricing models that require higher amounts.  This also leaves room for future enhancemnts, like allowing registrations for multiple students in a single order (such as a parent and child taking class together).
 
+
 #### Orders' required fields
 A new Order object requires only the student's foreign key because an order/cart is empty when first created.
 
@@ -61,13 +65,12 @@ A new Order object requires only the student's foreign key because an order/cart
 #### Line Items 
 The LineItems object represents pending enrollments (still in a shopping cart) and completed enrollments (belonging to a completed order).  I decided to call it "line items" instead of enrollments, because a likely future enhancement would be to also allow students to add non-class products to their carts.
 
-#### TO DO:  MAYBE NOT!!!  Users as Model Forms - UPDATE ME
+#### Users' required fields
 
-I decided not to use model forms for registration, since it's easier to apply different validation rules in different contexts with the regular form.  For example, I'm currently requiring all profiel information when the account is created, but a future enhancement would be to only take limited information at registration and require the profile be completed during checkout.
+As of my "better" scenario, all profile fields are required at the time of registration, but I decided not to require them at the model level because a likely future enhancement (and one of the "best" features I didn't get to) is to require a smaller set at registration and require the rest before checkout.  So for now, only the core fields are required at the model level, and the requirements are enforced by the registration form and the JS and Python code that handles registration and updating user profiles.
 
-The provided starter files used HTML form in registration.html.   I decided to switch to model forms so we can take advantage on on-page validation, and so we can easily populate the form for an "update your profile" feature.  
+It would also have been a little more elegant to replace the registration form with a model form, specifying which fields are required by widget, but it was faster to expand the form we were provided in earlier projects, and going to back to revise it wasn't a priority, given my spec.
 
-This also lets us control which fields are required on the form level vs. the model level.  A likely future enhancement would be to allow users to create accounts with limited information (basic contact info), but require more information at before they check out (terms & conditions, emergency contact info, etc.)   We can't do that if the fields are required at the model level.
 
 #### Gift cards for payment processing
 In my proposal, I said that checkout should:
@@ -188,3 +191,6 @@ BLAH explain.  One card is set up with $1000.  Add new cards or adjust balance i
 
 ### Class capacity validation
 BLAH add to cart, then update capacity in Django admin, or check out as another user in another browser
+
+
+## Admin User Setup Guide
