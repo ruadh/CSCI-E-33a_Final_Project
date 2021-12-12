@@ -84,7 +84,6 @@ def register(request):
                 'message': 'Password cannot be blank.',
             })
 
-        # Check for required fields
         first = request.POST['first-name'].strip()
         last = request.POST['last-name'].strip()
         email = request.POST['email'].strip()
@@ -93,17 +92,15 @@ def register(request):
         emergency_last = request.POST['emergency-last-name'].strip()
         emergency_email = request.POST['emergency-email'].strip()
         emergency_phone = request.POST['emergency-phone'].strip()
-        # accept_terms = request.POST['accept-terms']
         accept_terms = request.POST.get('accept-terms', '') == 'on'
 
-        # TO DO:  Refactor:  move this to a separate function with different scenarios?
+        # Check for required fields
         if first == '' or last == '' or email == '' or phone == '' or emergency_first == '' or emergency_last == '' or emergency_email == '' or emergency_phone == '':
             return render(request, 'enrollment/register.html', {
-                'message': 'You must enter all required fields.',
+                'message': 'All fields are required.',
             })
 
         if accept_terms != True:
-            # if accept_terms != 'Yes':
             return render(request, 'enrollment/register.html', {
                 'message': 'You must accept the class policies.',
             })
@@ -131,10 +128,11 @@ def register(request):
             })
         login(request, user)
         timezone.activate(user.timezone)
-        return HttpResponseRedirect(reverse('profile', args=[user.id]))
+        return HttpResponseRedirect(reverse('view_profile', args=[user.id]))
     else:
         timezone.activate(settings.DEFAULT_TIMEZONE)
         return render(request, 'enrollment/register.html')
+
 
 
 # NAVIGATION
@@ -243,6 +241,8 @@ def profile(request, id):
                 field_name = field.replace('-', '_')
                 if field_name in settings.EDITABLE_USER_FIELDS:
                     field_value = body.get(field).strip()
+                    if field_value == '':
+                        return JsonResponse({'error': 'All fields required.'}, status=400)
                     # CITATION: https://www.programiz.com/python-programming/methods/built-in/setattr
                     setattr(user, field_name, field_value)
             user.save()
@@ -365,7 +365,6 @@ def merge_carts(request, user=None):
     try:
         carts = Order.objects.filter(student=user, completed=None)
     except Order.DoesNotExist:
-        # TO DO:  Is this enough repetition for a refactor?
         primary = Order(student=user)
         primary.save()
     if carts.count() > 1:

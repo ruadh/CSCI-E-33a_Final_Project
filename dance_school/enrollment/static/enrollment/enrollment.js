@@ -154,7 +154,8 @@ function saveProfile(id) {
       body[field.id] = field.value.trim();
     }
   })
-
+  
+  
   if (errorCt == 0) {
 
     // Update the profile's contents via the API
@@ -176,7 +177,6 @@ function saveProfile(id) {
           // CITATION: https://stackoverflow.com/a/34913701/15100723
           for (const [fieldName, fieldValue] of Object.entries(profile)) {
 
-            // TO DO:  Refactor to use helper function?
             // Replace the contents of each input with its updated value, as returned from the API
             const input = document.querySelector(`#${fieldName}`);
             const child = newElement('span', fieldValue, 'value', fieldName, null, input)
@@ -193,11 +193,8 @@ function saveProfile(id) {
 
 
         } else {
-          // TO DO:  Display an alert above the post
           // DESIGN NOTE:  I'm repeating a queryselector, but I think that's better than storing the object,
           //               since this block will not usually be executed - only if there's an error.
-          // displayAlert(document.querySelector(`.post-row[data-post="${id}"] .alert`), post.error, 'danger');
-
           alert(`ERROR: ${profile.error}`);
 
           // Reenable the save and cancel buttons, so the user can try again

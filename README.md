@@ -154,13 +154,6 @@ In several functions, I chose to pass the user as a separate parameter instead o
 ### Reloading page after add/remove from cart in JS
 TO DO:  refresh page instead of updating all values
 
-### CSRF on GET
-
-I decided to include CSRF on the form in index.html that takes the user to the checkout preview screen.  I wasn't sure if that's needed on a GET request, but I decided to include it after reading this thread:
-https://security.stackexchange.com/q/115794
-
-Even though it is a GET request, it does actually impact data, since the cart validation process removes any invalid line items.  There's no harm in that happening even via XSS, but it could confuse a user if line items disappear and they don't see the error message.
-
 
 ## DEPENDENCIES:
 
