@@ -10,9 +10,8 @@
     <div class = "row">
         {% if students %}
             {% for student in students %}
-            <!-- Wrapping cards in an extra spacing div so I can control white space more precisely -->
-            <div class="col-md-6">
-                <div class="card">
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
                     <h3 class="card-header">{{student}}</h3>
                     <div class="card-body">
                         <div>

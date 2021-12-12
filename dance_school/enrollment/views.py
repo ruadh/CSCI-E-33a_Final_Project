@@ -268,7 +268,7 @@ def contact_sheet(request, id):
             students = None
         try:
             students = User.objects.filter(
-                orders__line_items__offering=offering)
+                orders__line_items__offering=offering).order_by('last_name','first_name')
         except User.DoesNotExist:
             students = None
         return render(request, 'enrollment/contact-sheet.html', {
