@@ -1,3 +1,5 @@
+'''Maps URLs for Enrollment app in Django project Dance School'''
+
 from django.urls import path
 
 from . import views

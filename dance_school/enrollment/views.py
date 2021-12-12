@@ -6,7 +6,6 @@
 import json
 from datetime import datetime
 
-import pytz
 from django import forms
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
@@ -25,6 +24,7 @@ from .models import GiftCard, LineItem, Offering, Order, Semester, User
 # FORM CLASSES
 
 class GiftCardForm(forms.Form):
+    '''A class for forms accepting payment via gift card'''
     card_number = forms.CharField(required=True, strip=True)
     month = forms.CharField(required=True, strip=True)
     year = forms.CharField(required=True, strip=True)
@@ -53,12 +53,11 @@ def login_view(request):
             # Set the display timezone to the user's chosen time
             timezone.activate(user.timezone)
             return HttpResponseRedirect(reverse('index'))
-        else:
-            return render(request, 'enrollment/login.html', {
-                'message': 'Invalid username and/or password.'
-            })
-    else:
-        return render(request, 'enrollment/login.html')
+        return render(request, 'enrollment/login.html', {
+            'message': 'Invalid username and/or password.'
+        })
+
+    return render(request, 'enrollment/login.html')
 
 
 def logout_view(request):
@@ -71,9 +70,6 @@ def logout_view(request):
 
 def register(request):
     '''Create a new end user (student) account'''
-
-    # Gather a list of timezones to populate the timezone choice field in the form
-    timezones = pytz.common_timezones
 
     if request.method == 'POST':
 
@@ -123,8 +119,8 @@ def register(request):
             user.emergency_last = emergency_last
             user.emergency_email = emergency_email
             user.emergency_phone = emergency_phone
-            if accept_terms == 'Yes':
-                user.accept_terms = datetime.datetime.now()
+            if accept_terms is True:
+                user.accept_terms = datetime.now(timezone.utc)
             user.save()
         except IntegrityError:
             return render(request, 'enrollment/register.html', {
@@ -137,9 +133,8 @@ def register(request):
         login(request, user)
         timezone.activate(user.timezone)
         return HttpResponseRedirect(reverse('view_profile', args=[user.id]))
-    else:
-        timezone.activate(settings.DEFAULT_TIMEZONE)
-        return render(request, 'enrollment/register.html')
+    timezone.activate(settings.DEFAULT_TIMEZONE)
+    return render(request, 'enrollment/register.html')
 
 
 def set_timezone(request):
@@ -254,16 +249,14 @@ def profile_view(request, id):
                 'semesters': semesters,
                 'profile': profile
             })
-        else:
-            return render(request, 'enrollment/profile.html', {
-                'orders': None,
-                'message': 'You may not view other users\' profiles'
-            })
-    else:
         return render(request, 'enrollment/profile.html', {
             'orders': None,
-            'message': 'GET method required'
+            'message': 'You may not view other users\' profiles'
         })
+    return render(request, 'enrollment/profile.html', {
+        'orders': None,
+        'message': 'GET method required'
+    })
 
 
 @login_required
@@ -274,38 +267,37 @@ def profile(request, id):
     Note: The list of editable fields is EDITABLE_USER_FIELDS in settings.py
     '''
 
-    if request.method != 'POST' and request.method != 'GET':
+    if request.method not in ('POST', 'GET'):
         return JsonResponse({'error': 'GET or POST method required.'}, status=400)
-    else:
-        try:
-            user = User.objects.get(pk=id)
-        except User.DoesNotExist:
-            return JsonResponse({'error': 'User not found.'}, status=404)
+    try:
+        user = User.objects.get(pk=id)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found.'}, status=404)
 
-        # Don't allow non-staff users to edit other's profiles
-        if request.user != user and not request.user.is_staff:
-            return JsonResponse({'error': 'You are not authorized to access this profile.'}, status=400)
+    # Don't allow non-staff users to edit other's profiles
+    if request.user != user and not request.user.is_staff:
+        return JsonResponse({'error': 'You are not authorized to access this profile.'}, status=400)
 
-        # If we're posting, make the changes
-        if request.method == 'POST':
+    # If we're posting, make the changes
+    if request.method == 'POST':
 
-            # Convert the passed JSON into a Python dictionary
-            body = json.loads(request.body)
+        # Convert the passed JSON into a Python dictionary
+        body = json.loads(request.body)
 
-            # Update each of the fields that were passed, if on the allow list
-            for field in body:
-                # NOTE: model fields use underscores, while HTML elements use dashes
-                field_name = field.replace('-', '_')
-                if field_name in settings.EDITABLE_USER_FIELDS:
-                    field_value = body.get(field).strip()
-                    if field_value == '':
-                        return JsonResponse({'error': 'All fields required.'}, status=400)
-                    # CITATION: https://www.programiz.com/python-programming/methods/built-in/setattr
-                    setattr(user, field_name, field_value)
-            user.save()
+        # Update each of the fields that were passed, if on the allow list
+        for field in body:
+            # NOTE: model fields use underscores, while HTML elements use dashes
+            field_name = field.replace('-', '_')
+            if field_name in settings.EDITABLE_USER_FIELDS:
+                field_value = body.get(field).strip()
+                if field_value == '':
+                    return JsonResponse({'error': 'All fields required.'}, status=400)
+                # CITATION: https://www.programiz.com/python-programming/methods/built-in/setattr
+                setattr(user, field_name, field_value)
+        user.save()
 
-        # Return the updated profile's editable fields
-        return JsonResponse(user.serialize_editable(), status=200)
+    # Return the updated profile's editable fields
+    return JsonResponse(user.serialize_editable(), status=200)
 
 
 @login_required
@@ -360,11 +352,10 @@ def contact_sheet(request, id):
             'offering': offering,
             'students': students
         })
-    else:
-        return render(request, 'enrollment/contact-sheet.html', {
-            'offerings': None,
-            'message': 'You are not authorized to view this page'
-        })
+    return render(request, 'enrollment/contact-sheet.html', {
+        'offerings': None,
+        'message': 'You are not authorized to view this page'
+    })
 
 
 # CART MANAGEMENT
@@ -460,7 +451,7 @@ def update_cart(request, id):
         line_item.save()
 
         return JsonResponse(line_item.serialize(), status=200)
-    elif request.method == 'DELETE':
+    if request.method == 'DELETE':
         try:
             line_item = LineItem.objects.get(id=id)
         except LineItem.DoesNotExist:
@@ -470,10 +461,9 @@ def update_cart(request, id):
         if line_item.order.student.id == request.user.id or request.user.is_staff:
             line_item.delete()
             return JsonResponse({}, status=200)
-        else:
-            return JsonResponse({'error': 'You may not delete line items belonging to another user.'}, status=401)
-    else:
-        return JsonResponse({'error': 'POST request required'}, status=400)
+        return JsonResponse({'error': 'You may not delete line items belonging to another user.'}, status=401)
+
+    return JsonResponse({'error': 'POST request required'}, status=400)
 
 
 @login_required
@@ -497,7 +487,7 @@ def validate_item(request, offering, user, action):
         error = f'Registration is already closed for {offering.semester}.'
     # Make sure space is still available in the class
     elif offering.spots_left < 1:
-        error = f'This offering is full.'
+        error = 'This offering is full.'
     else:
         return None
     return error
@@ -636,8 +626,9 @@ def pay(request):
             total = form.cleaned_data['total']
             if card.amount < total:
                 return False
-            else:
-                # Deduct the total from the gift card balance
-                card.amount -= total
-                card.save()
-                return True
+            # Deduct the total from the gift card balance
+            card.amount -= total
+            card.save()
+            return True
+        return False
+    return False
