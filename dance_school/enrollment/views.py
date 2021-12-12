@@ -434,7 +434,6 @@ def update_cart(request, id):
             offering=offering,
             price=offering.price
         )
-        # TO DO: Add support for planned absences
         line_item.save()
 
         return JsonResponse(line_item.serialize(), status=200)

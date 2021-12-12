@@ -3,44 +3,44 @@
 {% block body %}
 
 {% if offering %}
-<div class="container" id="contact-sheet">
-    <div class="row">
-        <h2>{{offering.course.title}} {{offering.weekday_name}}s at {{offering.start_time}}, {{offering.semester}}</h2>
-    </div>
-    <div class = "row">
-        {% if students %}
-            {% for student in students %}
-            <div class="col-md-6 mb-4">
-                <div class="card h-100">
-                    <h3 class="card-header">{{student}}</h3>
-                    <div class="card-body">
-                        <div>
-                            <span class="label">Email: </span> <span>{{student.email}}</span> 
-                        </div>
-                        <div>
-                            <span class="label">Phone: </span> <span>{{student.phone}}</span>
-                        </div>
-                        <div>
-                            <span class="label">Emergency Contact: </span> <span>{{student.emergency_first}} {{student.emergency_last}}</span> 
-                        </div>
-                        <div>
-                            <span class="label">Emergency Contact Phone: </span> <span>{{student.emergency_phone}}</span>
-                        </div>
-                        <div>
-                            <span class="label">Emergency Contact Email: </span> <span>{{student.emergency_email}}</span>
-                        </div>
-                        <div>
-                            <span class="label">Notes: </span> <span>{{student.contact_sheet_notes|default_if_none:""}}</span>
+    <div class="container" id="contact-sheet"> 
+        <div class="row">
+            <h2>{{offering.course.title}} {{offering.weekday_name}}s at {{offering.start_time}}, {{offering.semester}}</h2>
+        </div>
+        <div class = "row">
+            {% if students %}
+                {% for student in students %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <h3 class="card-header">{{student}}</h3>
+                        <div class="card-body">
+                            <div>
+                                <span class="label">Email: </span> <span>{{student.email}}</span> 
+                            </div>
+                            <div>
+                                <span class="label">Phone: </span> <span>{{student.phone}}</span>
+                            </div>
+                            <div>
+                                <span class="label">Emergency Contact: </span> <span>{{student.emergency_first}} {{student.emergency_last}}</span> 
+                            </div>
+                            <div>
+                                <span class="label">Emergency Contact Phone: </span> <span>{{student.emergency_phone}}</span>
+                            </div>
+                            <div>
+                                <span class="label">Emergency Contact Email: </span> <span>{{student.emergency_email}}</span>
+                            </div>
+                            <div>
+                                <span class="label">Notes: </span> <span>{{student.contact_sheet_notes|default_if_none:""}}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            {% endfor %}
-        {% else %}
-            <h3>No students enrolled.</h3>
-        {% endif %}
+                {% endfor %}
+            {% else %}
+                <h3>No students enrolled.</h3>
+            {% endif %}
+        </div>
     </div>
-</div>
 {% endif %}
 
 {% endblock %}
