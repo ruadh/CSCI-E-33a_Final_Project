@@ -34,11 +34,11 @@ function addToCart(id) {
 
   // Add the offering to the cart via the API
   fetch(`/cart/${id}`, {
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': token
-      }
-    })
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': token
+    }
+  })
     .then(response => response.json())
     .then(lineItem => {
 
@@ -71,11 +71,11 @@ function removeFromCart(id) {
 
   // Add the offering to the cart via the API
   fetch(`/cart/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'X-CSRFToken': token
-      }
-    })
+    method: 'DELETE',
+    headers: {
+      'X-CSRFToken': token
+    }
+  })
     .then(response => response.json())
     .then(lineItem => {
 
@@ -117,7 +117,7 @@ function profileForm() {
   });
 
   // Replace the edit button with a Save button
-  swapProfileButtons('edit', 'save');
+  swapProfileButtons('edit');
 
 }
 
@@ -156,12 +156,12 @@ function saveProfile(id) {
 
     // Update the profile's contents via the API
     fetch(`/users/${id}`, {
-        method: 'POST',
-        body: JSON.stringify(body),
-        headers: {
-          'X-CSRFToken': token
-        }
-      })
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: {
+        'X-CSRFToken': token
+      }
+    })
       .then(response => response.json())
       .then(profile => {
 
@@ -177,7 +177,7 @@ function saveProfile(id) {
           }
 
           // Replace the save button with an edit button
-          swapProfileButtons('save', 'edit');
+          swapProfileButtons('save');
 
           // Reenable the submit cart button, if present  (Again: using querySelectorAll to gracefully handle missing elements)
           document.querySelectorAll('#submit-cart-button').forEach(button => {
@@ -219,8 +219,8 @@ function cancelProfile(id) {
 
   // Get the profile's original contents via the API
   fetch(`/users/${id}`, {
-      method: 'GET'
-    })
+    method: 'GET'
+  })
     .then(response => response.json())
     .then(profile => {
 
@@ -236,7 +236,7 @@ function cancelProfile(id) {
         }
 
         // Replace the save button with an edit button
-        swapProfileButtons('save', 'edit');
+        swapProfileButtons('save');
 
         // Reenable the submit cart button, if present  (Again: using querySelectorAll to gracefully handle missing elements)
         document.querySelectorAll('#submit-cart-button').forEach(button => {
@@ -296,38 +296,38 @@ function newElement(element, innerHTML, cssClass = null, id = null, value = null
 /**
  * Swap the Edit Profile and Save Profile buttons
  * @param {string} from - the button type to be removed, either 'edit' or 'save' in lowercase
- * @param {string} to - the button type to be added, either 'edit' or 'save' in lowercase
  */
 
-function swapProfileButtons(from, to) {
+function swapProfileButtons(from) {
 
-  // Validate the parameters
-  if ((from != 'edit' && from != 'save') || (to != 'edit' && to != 'save')) {
-    return;
+  // Validate the parameter
+  if (from == 'edit' || from == 'save') {
+
+    to = (from == 'edit') ? 'save' : 'edit';
+
+    // Create a new edit or save button
+    const oldButton = document.querySelector(`#${from}-profile-button`);
+    // CITATION:  https://flaviocopes.com/how-to-uppercase-first-letter-javascript/
+    const newButton = newElement('button', `${to.charAt(0).toUpperCase()}${to.slice(1)}`, 'btn btn-link', `${to}-profile-button`);
+    newButton.dataset.profile = oldButton.dataset.profile;
+    if (to == 'save') {
+      newButton.addEventListener('click', () => saveProfile(oldButton.dataset.profile));
+    } else {
+      newButton.addEventListener('click', () => profileForm(oldButton.dataset.profile));
+    }
+
+    // Replace the old button with the new one
+    oldButton.after(newButton);
+    oldButton.remove();
+
+    // Add or remove the cancel button
+    if (to == 'save') {
+      const cancelButton = newElement('button', 'Cancel', 'btn btn-link', 'cancel-button');
+      cancelButton.addEventListener('click', () => cancelProfile(oldButton.dataset.profile));
+      newButton.after(cancelButton);
+    } else {
+      document.querySelector('#cancel-button').remove();
+    }
+
   }
-
-  // Create a new edit or save button
-  const oldButton = document.querySelector(`#${from}-profile-button`);
-  // CITATION:  https://flaviocopes.com/how-to-uppercase-first-letter-javascript/
-  const newButton = newElement('button', `${to.charAt(0).toUpperCase()}${to.slice(1)}`, 'btn btn-link', `${to}-profile-button`);
-  newButton.dataset.profile = oldButton.dataset.profile;
-  if (to == 'save') {
-    newButton.addEventListener('click', () => saveProfile(oldButton.dataset.profile));
-  } else {
-    newButton.addEventListener('click', () => profileForm(oldButton.dataset.profile));
-  }
-
-  // Replace the old button with the new one
-  oldButton.after(newButton);
-  oldButton.remove();
-
-  // Add or remove the cancel button
-  if (to == 'save') {
-    const cancelButton = newElement('button', 'Cancel', 'btn btn-link', 'cancel-button');
-    cancelButton.addEventListener('click', () => cancelProfile(oldButton.dataset.profile));
-    newButton.after(cancelButton);
-  } else {
-    document.querySelector('#cancel-button').remove();
-  }
-
 }

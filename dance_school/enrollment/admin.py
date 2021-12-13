@@ -90,13 +90,28 @@ class GiftCardAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'amount')
 
 
+class CourseAdmin(admin.ModelAdmin):
+    '''Primary admin area for courses'''
+    ordering = ('title',)
+
+
+class LocationAdmin(admin.ModelAdmin):
+    '''Primary admin area for locations'''
+    ordering = ('name',)
+
+class VacationAdmin(admin.ModelAdmin):
+    '''Primary admin area for vacations'''
+    list_display = ('start_date', 'end_date')
+    ordering = ('start_date',)
+
+
 # Register your models here.
 admin.site.register(User, UserAdmin)
 admin.site.register(Semester, SemesterAdmin)
-admin.site.register(Course)
+admin.site.register(Course, CourseAdmin)
 admin.site.register(Offering, OfferingAdmin)
-admin.site.register(Location)
+admin.site.register(Location, LocationAdmin)
 admin.site.register(Order, OrderAdmin)
 admin.site.register(LineItem, LineItemAdmin)
 admin.site.register(GiftCard, GiftCardAdmin)
-admin.site.register(Vacation)
+admin.site.register(Vacation, VacationAdmin)

@@ -69,7 +69,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                # CITATION: https://chriskief.com/2013/09/19/access-django-constants-from-settings-py-in-a-template/
                 'enrollment.context_processors.global_settings'
             ],
         },
