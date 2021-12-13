@@ -1,20 +1,13 @@
-/* NOTE:  Styles are primarily controlled by Boostrap CSS. */
+/* MAJOR LAYOUT ELEMENTS */
 
-
-/* Whitespace around the major structural elements */
 header,
 footer, 
 .row {
     margin: 20px;
 }
 
-form label,
-form input[type="submit"] {
-    display: block;
-}
-
-.label {
-    font-weight: bold;
+.container {
+    margin-left: 10px;
 }
 
 .card {
@@ -25,7 +18,6 @@ form input[type="submit"] {
 .accordion {
     margin: 20px;
 }
-
 
 .accordion .card {
     margin-top: 0;
@@ -38,12 +30,38 @@ form input[type="submit"] {
     border: none;
 }
 
+/* Center the paginator elements */
+.container nav {
+    display: flex;
+    justify-content: center;
+}
+
 /* Accordion expand/collapse links */
 .card-header .btn-link {
     font-size: 1.25rem;
     padding-left: 0;
 }
 
+/* Show inline labels in bold */
+.label {
+    font-weight: bold;
+}
+
+
+/* FORM ELEMENTS*/
+
+form label,
+form input[type="submit"] {
+    display: block;
+}
+
+input[type="submit"] {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+
+/* CART ELEMENTS */
 
 #cart-container ul,
 #enrollments-orders ul {
@@ -61,10 +79,8 @@ form input[type="submit"] {
     padding-right: 0;
 }
 
-input[type="submit"] {
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
+
+/* CONTACT LIST STYLES */
 
 #contact-sheet {
     margin: 0;
@@ -80,16 +96,6 @@ input[type="submit"] {
     padding-bottom: 0;
 }
 
-/* Left-justify Boostrap Grid containers instead of default centered behavior */
-.container {
-    margin-left: 10px;
-}
-
-/* Center the paginator elements */
-.container nav {
-    display: flex;
-    justify-content: center;
-}
 
 /* RESPONSIVE - Styles for larger screens - Most responsive behavior is based on the Boostrap md breakpoint  */
 
