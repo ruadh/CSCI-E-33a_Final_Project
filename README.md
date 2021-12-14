@@ -4,6 +4,13 @@ Harvard Extension School CSCI E-33a "Web Programming with Python and JavaScript"
 ## About the Dance School app
 This app allows an admin user to set up a catalog of courses in current and future semesters, and allows students to register for courses.  Please see my project proposal for the full list of features.  I completed all of the functionality in the "good" and "better" sections, but not the items in the "best" section.
 
+## Dependencies
+The required packages are all included in requirements.txt.  
+These are the steps that I needed to take to run my project in a fresh virtual environment
+1. pip3 install Django
+2. pip3 install -r requirements.txt
+3. python manage.py makemigrations
+4. python manage.py migrate
 
 ## Files
 
@@ -179,6 +186,11 @@ So this isn't perfect, but I think it is acceptable for an MVP.
 In several places, I applied a Bootstrap specialty class to an element that didn't need the special abilities so that the styling would be consistent.  For example, I applied the accordion class to the shopping cart in the sidebar just so it would have the same padding as the class list, where it is neede to expand/collapse the class details.
 
 One downside of this approach is that it would make it harder to target the listings by class in JavaScript, but that isn't needed for this project or any of the future enhancements I brainstormed.  Plus, I can easily be overcome the issue by targeting elements with IDs or more complex selectors.  And if that still didn't meet the need, I could start using SASS for my style sheet and set up a new class that inherits from the Boostrap class.
+
+### Refactor opportunity:  saveProfile and cancelProfile
+If I had had more time, I would have merged the saveProfile and cancelProfile functions in enrollment.js.  Both scripts disable and enable the same buttons, call the same API endpoint (just with different methods), and interact with the same DOM elements.  
+
+I would have liked to do this before submitting my homework, but once I dealt with higher priority tasks, I wasn't confident that I had enough time left to implement and test it thoroughly.  It wasn't worth risking introducing bugs at the last minute.
 
 
 ## Citations

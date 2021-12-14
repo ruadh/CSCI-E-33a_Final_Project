@@ -62,8 +62,8 @@ class OfferingAdmin(admin.ModelAdmin):
     '''Primary admin area for offerings'''
     list_display = ('semester', 'course', 'weekday', 'start_time',
                     'location', 'spots_left', 'contact_sheet')
-    readonly_fields = ('price', 'offering_dates',
-                       'no_class_dates', 'num_weeks')
+    readonly_fields = ('price', 'offering_dates_text',
+                       'no_class_dates_text', 'num_weeks')
 
     # CITATION:  https://stackoverflow.com/a/32220985
     def contact_sheet(self, obj):
